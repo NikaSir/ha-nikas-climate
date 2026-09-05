@@ -9,7 +9,7 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, VERSION
+from .const import DOMAIN, VERSION, UI_VERSION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,28 +36,21 @@ PANEL_METADATA = {
     "icon": PANEL_ICON,
     "owner": DOMAIN,
     "preferred_view": "home",
-    "ui_version": "1.0.0",
+    "ui_version": UI_VERSION,
     "frontend_bundle": PANEL_BUNDLE,
 }
 
 
 async def async_register_panel(hass: HomeAssistant, entry_id: str) -> bool:
-    """Register the route if it does not already belong to another panel."""
     domain_data = hass.data.setdefault(DOMAIN, {})
-
     if not domain_data.get(PANEL_STATIC_REGISTERED):
         await hass.http.async_register_static_paths(
             [StaticPathConfig(PANEL_STATIC_URL, str(PANEL_DIRECTORY), cache_headers=False)]
         )
         domain_data[PANEL_STATIC_REGISTERED] = True
-
     if frontend.async_panel_exists(hass, PANEL_URL_PATH):
-        _LOGGER.warning(
-            "Route /%s already has an owner; NikaS Climate preserves it unchanged",
-            PANEL_URL_PATH,
-        )
+        _LOGGER.warning("Route /%s already has an owner; NikaS Climate preserves it unchanged", PANEL_URL_PATH)
         return False
-
     await panel_custom.async_register_panel(
         hass=hass,
         frontend_url_path=PANEL_URL_PATH,
@@ -75,7 +68,6 @@ async def async_register_panel(hass: HomeAssistant, entry_id: str) -> bool:
 
 
 def async_unregister_panel(hass: HomeAssistant, entry_id: str) -> None:
-    """Remove only the route registered by this exact config entry."""
     domain_data = hass.data.setdefault(DOMAIN, {})
     if domain_data.get(PANEL_ROUTE_OWNER) != entry_id:
         return
