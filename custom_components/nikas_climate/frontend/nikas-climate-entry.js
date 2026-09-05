@@ -1,9 +1,9 @@
-import "./nikas-climate-panel.js?v=1.2.2";
+import "./nikas-climate-panel.js?v=1.2.3";
 
 const Panel = customElements.get("nikas-climate-panel");
-const PATCH_UI_VERSION = "1.2.2";
+const PATCH_UI_VERSION = "1.2.3";
 
-if (Panel && !Panel.prototype.__nikasUi122Patched) {
+if (Panel && !Panel.prototype.__nikasUi123Patched) {
   const originalRender = Panel.prototype.render;
   const originalPatch = Panel.prototype.patch;
 
@@ -40,12 +40,12 @@ if (Panel && !Panel.prototype.__nikasUi122Patched) {
     const fans=[["auto","Авто","mdi:fan-auto"],["low","Низкая","mdi:fan-speed-1"],["medium","Средняя","mdi:fan-speed-2"],["high","Высокая","mdi:fan-speed-3"]];
     const tempChanged=m.target!=null&&Number(d.target)!==Number(m.target);
     const action=(current,target,attr,value,icon,label)=>{const cls=["action"];if(current===value)cls.push("current");if(target===value&&target!==current)cls.push("target");return `<button class="${cls.join(" ")}" data-${attr}="${value}" ${d.applying?"disabled":""}><ha-icon icon="${icon}"></ha-icon><span>${label}</span></button>`;};
-    const flapKnown=m.swing&&m.swing!=="—"&&m.swing!=="unavailable";
+    const flapKnown=m.swing&&!["—","unavailable","unknown"].includes(m.swing);
     const flapChanged=d.swing!==m.swing;
     const flapClass=flapChanged?"target":(flapKnown?"current":"");
     const flapTarget=this.flapLabel(d.swing);
     return `<section class="card control-card"><div class="page-head"><div class="room-title">${m.room.title}</div><div class="area">${m.room.area}</div></div>
-      <div class="setpoint setpoint-with-flap"><button data-delta="-1" ${d.applying?"disabled":""}>−</button><div class="setpoint-center"><div class="num ${tempChanged?"target":""}">${this.fmt(d.target,0)}°</div><span class="setpoint-current">Сейчас ${this.fmt(m.target,0)}°</span></div><button class="setpoint-flap ${flapClass}" data-flap ${d.applying?"disabled":""}><ha-icon icon="${this.flapIcon(d.swing)}"></ha-icon><span>Створка</span><small>${flapTarget}</small></button><button data-delta="1" ${d.applying?"disabled":""}>+</button></div>
+      <div class="setpoint setpoint-with-flap"><button data-delta="-1" ${d.applying?"disabled":""}>−</button><div class="setpoint-center"><div class="num ${tempChanged?"target":""}">${this.fmt(d.target,0)}°</div><span class="setpoint-current">Сейчас ${this.fmt(m.target,0)}°</span></div><button data-delta="1" ${d.applying?"disabled":""}>+</button><button class="setpoint-flap ${flapClass}" data-flap ${d.applying?"disabled":""}><ha-icon icon="${this.flapIcon(d.swing)}"></ha-icon><span>Створка</span><small>${flapTarget}</small></button></div>
       <div class="control-section"><div class="control-label">Режим</div><div class="modes">${modes.map(([v,t,i])=>action(m.mode,d.mode,"mode",v,i,t)).join("")}</div></div>
       <div class="control-section"><div class="control-label">Вентилятор</div><div class="fan-modes">${fans.map(([v,t,i])=>action(m.fan,d.fan,"fan",v,i,t)).join("")}</div></div>
       ${(m.features?.night!=null||m.features?.turbo!=null)?`<div class="control-section"><div class="control-label">Дополнительно</div><div class="feature-grid compact-features">
@@ -62,7 +62,7 @@ if (Panel && !Panel.prototype.__nikasUi122Patched) {
     const result = originalRender.apply(this, args);
     const version = this.shadowRoot?.querySelector(".header-title span");
     if (version) version.textContent = `UI v${PATCH_UI_VERSION}`;
-    this.__installNikasUi122?.();
+    this.__installNikasUi123?.();
     this.__installNikasScrollBoundary?.();
     return result;
   };
@@ -79,16 +79,17 @@ if (Panel && !Panel.prototype.__nikasUi122Patched) {
     return result;
   };
 
-  Panel.prototype.__installNikasUi122 = function () {
+  Panel.prototype.__installNikasUi123 = function () {
     const root=this.shadowRoot;
-    if(!root || root.querySelector("style[data-nikas-ui122]")) return;
+    if(!root || root.querySelector("style[data-nikas-ui123]")) return;
     const style=document.createElement("style");
-    style.dataset.nikasUi122="1";
+    style.dataset.nikasUi123="1";
     style.textContent=`
-      /* Summary is an operational screen: it must fit the working viewport without scrolling. */
+      /* Summary is an operational screen: it must use the whole working viewport without scrolling. */
       .viewport.summary-fit{overflow-y:hidden!important;}
-      .summary-fit-content{height:100%;min-height:0;padding:8px 12px!important;}
-      .summary-card{height:100%;min-height:0;margin:0!important;padding:12px!important;display:flex;flex-direction:column;overflow:hidden;}
+      .summary-fit-content{height:100%!important;min-height:0!important;padding:8px 12px!important;display:block!important;}
+      .summary-fit-content>#content{height:100%!important;min-height:0!important;}
+      .summary-card{height:100%!important;min-height:0!important;margin:0!important;padding:12px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
       .summary-card .summary-head{flex:0 0 auto;gap:8px;}
       .summary-card .room-title{font-size:23px;}
       .summary-card .area{margin-top:3px;}
@@ -97,60 +98,69 @@ if (Panel && !Panel.prototype.__nikasUi122Patched) {
       .summary-card .connection-copy strong{font-size:15px;}
       .summary-card .connection-copy small{font-size:12px;}
       .summary-card .summary-climate{flex:0 0 auto;margin-top:8px;gap:8px;}
-      .summary-card .primary-temp{min-height:100px;padding:12px 14px;}
-      .summary-card .temp-main{font-size:48px;margin-top:2px;}
-      .summary-card .temp-sub{margin-top:5px;font-size:12px;}
+      .summary-card .primary-temp{min-height:96px;padding:11px 14px;}
+      .summary-card .temp-main{font-size:47px;margin-top:2px;}
+      .summary-card .temp-sub{margin-top:4px;font-size:12px;}
       .summary-card .metric-stack{gap:8px;}
-      .summary-card .metric{padding:9px 11px;min-height:0;}
+      .summary-card .metric{padding:8px 11px;min-height:0;}
       .summary-card .metric strong{font-size:21px;margin-top:3px;}
       .summary-card .metric small{font-size:11px;margin-top:3px;}
-      .summary-card .report-title{margin-top:8px;font-size:12px;}
-      .summary-card .summary-status{flex:0 0 auto;gap:6px;margin-top:6px;}
-      .summary-card .status-item{min-height:65px;padding:5px 4px;border-radius:15px;}
-      .summary-card .status-item ha-icon{--mdc-icon-size:20px;margin-bottom:2px;}
+      .summary-card .report-title{margin-top:7px;font-size:12px;}
+      .summary-card .summary-status{flex:0 0 auto;gap:6px;margin-top:5px;}
+      .summary-card .status-item{min-height:63px;padding:4px;border-radius:15px;}
+      .summary-card .status-item ha-icon{--mdc-icon-size:24px;margin-bottom:2px;}
       .summary-card .status-item span{font-size:10.5px;}
-      .summary-card .status-item strong{font-size:12.5px;margin-top:2px;}
-      .summary-card .chart-card{flex:1 1 auto;min-height:102px;margin-top:8px;padding:8px 10px;border-radius:16px;overflow:hidden;}
+      .summary-card .status-item strong{font-size:12.5px;margin-top:1px;}
+      .summary-card .chart-card{flex:1 1 0!important;min-height:118px!important;margin-top:7px;padding:8px 10px;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+      .summary-card .chart-head{flex:0 0 auto;}
       .summary-card .chart-head strong{font-size:12px;}
       .summary-card .chart-head small{font-size:10px;}
-      .summary-card .chart-wrap{height:72px;margin-top:4px;}
-      .summary-card .chart-empty{height:70px;}
-      .summary-card .chart-legend{margin-top:2px;font-size:9.5px;gap:10px;}
+      .summary-card .chart-wrap{flex:1 1 auto!important;min-height:76px!important;height:auto!important;margin-top:4px;}
+      .summary-card .chart-empty{flex:1 1 auto!important;min-height:76px!important;height:auto!important;}
+      .summary-card .chart-legend{flex:0 0 auto;margin-top:2px;font-size:9.5px;gap:10px;}
+
+      /* Control icons are operational, not decorative: keep them clearly readable. */
+      .control-card .action ha-icon{--mdc-icon-size:31px!important;}
+      .control-card .action{min-height:82px!important;gap:7px!important;}
+      .control-card .fan-modes .action ha-icon{--mdc-icon-size:29px!important;}
 
       /* Four fan speeds always occupy one row. */
       .fan-modes{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;}
       .fan-modes .action{min-width:0;padding-inline:3px;font-size:11.5px;}
 
-      /* The single motorized flap belongs to the temperature/setpoint control. */
-      .setpoint-with-flap{grid-template-columns:54px minmax(0,1fr) 84px 54px!important;gap:7px!important;}
-      .setpoint-with-flap>button:not(.setpoint-flap){height:54px;}
-      .setpoint-flap{height:64px!important;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent)!important;border-radius:17px!important;background:var(--card-background-color)!important;color:var(--primary-text-color)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;padding:4px!important;font-size:11px!important;}
-      .setpoint-flap ha-icon{--mdc-icon-size:21px;}
+      /* Setpoint order: minus, temperature, plus, flap. */
+      .setpoint-with-flap{grid-template-columns:54px minmax(0,1fr) 54px 84px!important;gap:7px!important;}
+      .setpoint-with-flap>button:not(.setpoint-flap){height:58px!important;}
+      .setpoint-flap{height:66px!important;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent)!important;border-radius:17px!important;background:var(--card-background-color)!important;color:var(--primary-text-color)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;padding:4px!important;font-size:11px!important;}
+      .setpoint-flap ha-icon{--mdc-icon-size:27px!important;}
       .setpoint-flap span{font-weight:750;line-height:1;}
       .setpoint-flap small{font-size:9.5px;line-height:1.1;color:var(--secondary-text-color);white-space:nowrap;}
       .setpoint-flap.current{background:color-mix(in srgb,var(--primary-color) 10%,var(--card-background-color))!important;border-color:color-mix(in srgb,var(--primary-color) 52%,var(--divider-color))!important;color:var(--primary-color)!important;}
       .setpoint-flap.target{background:color-mix(in srgb,var(--success-color,#43a047) 12%,var(--card-background-color))!important;border-color:color-mix(in srgb,var(--success-color,#43a047) 54%,var(--divider-color))!important;color:var(--success-color,#43a047)!important;}
       .compact-features{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 
+      /* The explanatory note is secondary; keep it below the initial working screen. */
+      .control-note{margin-top:110px!important;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--divider-color) 65%,transparent);}
+
       @media(max-width:480px){
         .summary-card .summary-climate{grid-template-columns:1fr!important;}
         .summary-card .metric-stack{grid-template-columns:1fr 1fr!important;grid-template-rows:auto!important;}
-        .summary-card .primary-temp{min-height:92px!important;}
-        .summary-card .temp-main{font-size:46px!important;}
+        .summary-card .primary-temp{min-height:90px!important;}
+        .summary-card .temp-main{font-size:45px!important;}
       }
       @media(max-height:760px){
         .summary-fit-content{padding-block:6px!important;}
         .summary-card{padding:10px!important;}
-        .summary-card .primary-temp{min-height:82px!important;}
-        .summary-card .temp-main{font-size:42px!important;}
-        .summary-card .status-item{min-height:58px!important;}
-        .summary-card .chart-wrap{height:58px!important;}
-        .summary-card .chart-card{min-height:88px!important;}
+        .summary-card .primary-temp{min-height:80px!important;}
+        .summary-card .temp-main{font-size:41px!important;}
+        .summary-card .status-item{min-height:56px!important;}
+        .summary-card .chart-card{min-height:96px!important;}
+        .control-note{margin-top:80px!important;}
       }
       @media(max-width:360px){
         .fan-modes{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
         .fan-modes .action{font-size:10.5px!important;}
-        .setpoint-with-flap{grid-template-columns:48px minmax(0,1fr) 76px 48px!important;}
+        .setpoint-with-flap{grid-template-columns:48px minmax(0,1fr) 48px 76px!important;}
       }
     `;
     root.appendChild(style);
@@ -180,5 +190,5 @@ if (Panel && !Panel.prototype.__nikasUi122Patched) {
     if(shell)shell.scrollTop=0;
   };
 
-  Panel.prototype.__nikasUi122Patched = true;
+  Panel.prototype.__nikasUi123Patched = true;
 }
