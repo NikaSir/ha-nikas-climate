@@ -1,4 +1,4 @@
-const UI_VERSION = "1.1.0";
+const UI_VERSION = "1.1.1";
 const SAFE_RETURN_ROUTE = "/dashboard-house-v13/home";
 
 const ROOMS = [
@@ -27,6 +27,7 @@ class NikasClimatePanel extends HTMLElement {
     this._selected = localStorage.getItem("nikas_climate.peer") || "living";
     this._tab = "summary";
     this._rendered = false;
+    this._drafts = {};
   }
 
   set hass(value) {
@@ -70,13 +71,6 @@ class NikasClimatePanel extends HTMLElement {
     return ({off:"Выкл.",vertical:"Вертикальные",horizontal:"Горизонтальные",both:"Оба"})[value] || value || "—";
   }
 
-  async call(service, data) {
-    if (!this._hass) return;
-    if (!window.confirm("Подтвердить действие?")) return;
-    const [domain, name] = service.split(".");
-    await this._hass.callService(domain, name, data);
-  }
-
   roomModel(room) {
     const climate = this.findClimate(room);
     const roomTemp = this.roomTemp(room);
@@ -107,6 +101,40 @@ class NikasClimatePanel extends HTMLElement {
     return {tone:"local", label:"Локально", fresh:"Данные актуальны", freshTone:"current"};
   }
 
+  draftFor(m) {
+    const key = m.room.key;
+    let draft = this._drafts[key];
+    if (!draft || draft.entityId !== m.climate?.entity_id) {
+      draft = {
+        entityId: m.climate?.entity_id || null,
+        target: m.target ?? 22,
+        mode: m.mode,
+        dirty: false,
+        applying: false,
+        error: null
+      };
+      this._drafts[key] = draft;
+      return draft;
+    }
+    if (draft.applying) {
+      const targetMatches = m.target == null || Math.abs(Number(m.target) - Number(draft.target)) < 0.01;
+      const modeMatches = m.mode === draft.mode;
+      if (targetMatches && modeMatches) draft.applying = false;
+    }
+    if (!draft.dirty && !draft.applying) {
+      draft.target = m.target ?? draft.target ?? 22;
+      draft.mode = m.mode;
+      draft.error = null;
+    }
+    return draft;
+  }
+
+  draftChanged(m, draft) {
+    const tempChanged = m.target != null && Number(draft.target) !== Number(m.target);
+    const modeChanged = draft.mode !== m.mode;
+    return tempChanged || modeChanged;
+  }
+
   render() {
     this.shadowRoot.innerHTML = `
       <style>
@@ -133,9 +161,12 @@ class NikasClimatePanel extends HTMLElement {
         .primary-temp{min-height:174px;padding:16px;border-radius:22px;background:color-mix(in srgb,var(--primary-color) 5%,var(--card-background-color));border:1px solid color-mix(in srgb,var(--primary-color) 14%,var(--divider-color));display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary-text-color)}.temp-main{margin-top:4px;font-size:58px;font-weight:800;line-height:1;letter-spacing:-.05em}.temp-sub{margin-top:8px;color:var(--secondary-text-color);font-size:13px}
         .metric-stack{display:grid;grid-template-rows:1fr 1fr;gap:10px}.metric{padding:13px;border-radius:19px;background:var(--card-background-color);border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);display:flex;flex-direction:column;justify-content:center}.metric span{font-size:12px;font-weight:700;color:var(--secondary-text-color)}.metric strong{margin-top:5px;font-size:24px;line-height:1}.metric small{margin-top:5px;font-size:12px;color:var(--secondary-text-color)}
         .status-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.status-item{min-height:72px;padding:10px;border-radius:18px;background:var(--card-background-color);border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);text-align:center;display:flex;flex-direction:column;justify-content:center}.status-item span{font-size:12px;color:var(--secondary-text-color);font-weight:700}.status-item strong{margin-top:5px;font-size:15px;line-height:1.1}
-        .control-card .room-title,.section-title{font-size:24px;font-weight:800}.setpoint{display:grid;grid-template-columns:58px minmax(0,1fr) 58px;align-items:center;gap:10px;margin-top:16px}.setpoint button{height:54px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);border-radius:18px;background:var(--card-background-color);font-size:26px;color:var(--primary-text-color)}.setpoint .num{text-align:center;font-size:44px;font-weight:800}.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.action{min-height:52px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);border-radius:18px;background:var(--card-background-color);color:var(--primary-text-color);font-size:13px;font-weight:750}.action.active{background:color-mix(in srgb,var(--primary-color) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--primary-color) 52%,var(--divider-color));color:var(--primary-color)}
+        .control-card .room-title,.section-title{font-size:24px;font-weight:800}.setpoint{display:grid;grid-template-columns:58px minmax(0,1fr) 58px;align-items:center;gap:10px;margin-top:16px}.setpoint button{height:54px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);border-radius:18px;background:var(--card-background-color);font-size:26px;color:var(--primary-text-color)}.setpoint-center{text-align:center}.setpoint .num{font-size:44px;font-weight:800}.setpoint .num.target{color:var(--success-color,#43a047)}.setpoint-current{display:block;margin-top:3px;font-size:12px;font-weight:700;color:var(--primary-color)}
+        .modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.action{min-height:52px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);border-radius:18px;background:var(--card-background-color);color:var(--primary-text-color);font-size:13px;font-weight:750}.action.current{background:color-mix(in srgb,var(--primary-color) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--primary-color) 52%,var(--divider-color));color:var(--primary-color)}.action.target{background:color-mix(in srgb,var(--success-color,#43a047) 12%,var(--card-background-color));border-color:color-mix(in srgb,var(--success-color,#43a047) 54%,var(--divider-color));color:var(--success-color,#43a047)}
+        .apply{width:100%;min-height:54px;margin-top:14px;border-radius:18px;border:1px solid color-mix(in srgb,var(--success-color,#43a047) 55%,var(--divider-color));background:color-mix(in srgb,var(--success-color,#43a047) 14%,var(--card-background-color));color:var(--success-color,#43a047);font-weight:800;font-size:15px}.apply:disabled{background:var(--secondary-background-color);border-color:color-mix(in srgb,var(--divider-color) 70%,transparent);color:var(--disabled-text-color);opacity:.72}.apply.applying{background:color-mix(in srgb,var(--success-color,#43a047) 18%,var(--card-background-color))}
+        .legend{display:flex;gap:14px;align-items:center;margin-top:10px;font-size:12px;color:var(--secondary-text-color)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:9px;height:9px;border-radius:50%}.legend .current-dot{background:var(--primary-color)}.legend .target-dot{background:var(--success-color,#43a047)}
         .row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent)}.row:last-child{border-bottom:0}.row span{color:var(--secondary-text-color)}.row strong{text-align:right}
-        .notice{font-size:14px;line-height:1.45;color:var(--secondary-text-color);margin-top:10px}
+        .notice{font-size:14px;line-height:1.45;color:var(--secondary-text-color);margin-top:10px}.notice.error{color:var(--error-color,#db4437);font-weight:700}
         .bottom-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left));background:color-mix(in srgb,var(--primary-background-color) 97%,transparent);border-top:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);backdrop-filter:blur(18px) saturate(130%)}.bottom-nav button{border:0;background:transparent;color:var(--secondary-text-color);font-size:12px;font-weight:700}.bottom-nav button.active{color:var(--primary-color)}
         @container nikas-panel (min-width:600px){.content{padding-inline:16px}}
         @container nikas-panel (min-width:1024px){.content{padding-inline:24px}}
@@ -230,14 +261,30 @@ class NikasClimatePanel extends HTMLElement {
 
   control(m) {
     if (!m.climate) return `<section class="card"><div class="section-title">Управление</div><p class="notice">Climate-сущность выбранного кондиционера не найдена.</p></section>`;
+    const draft = this.draftFor(m);
+    const changed = this.draftChanged(m,draft);
+    draft.dirty = draft.dirty || changed;
     const modes = [["off","Выкл."],["cool","Холод"],["heat","Тепло"],["auto","Авто"],["dry","Сушка"],["fan_only","Вент."]];
+    const targetTempChanged = m.target != null && Number(draft.target) !== Number(m.target);
     return `<section class="card control-card">
       <div class="hero-top"><div><div class="room-title">${m.room.title}</div><div class="area">${m.room.area}</div></div>${this.connectionPlaque(m)}</div>
-      <div class="setpoint"><button data-delta="-1">−</button><div class="num">${this.fmt(m.target,0)}°</div><button data-delta="1">+</button></div>
-      <div class="modes">${modes.map(([v,t])=>`<button class="action ${m.mode===v?"active":""}" data-mode="${v}">${t}</button>`).join("")}</div>
+      <div class="setpoint">
+        <button data-delta="-1" ${draft.applying?"disabled":""}>−</button>
+        <div class="setpoint-center"><div class="num ${targetTempChanged?"target":""}">${this.fmt(draft.target,0)}°</div><span class="setpoint-current">Сейчас ${this.fmt(m.target,0)}°</span></div>
+        <button data-delta="1" ${draft.applying?"disabled":""}>+</button>
+      </div>
+      <div class="modes">${modes.map(([v,t])=>{
+        const classes = ["action"];
+        if (m.mode === v) classes.push("current");
+        if (draft.mode === v && draft.mode !== m.mode) classes.push("target");
+        return `<button class="${classes.join(" ")}" data-mode="${v}" ${draft.applying?"disabled":""}>${t}</button>`;
+      }).join("")}</div>
+      <div class="legend"><span><i class="current-dot"></i>Текущее</span><span><i class="target-dot"></i>Целевое</span></div>
+      <button class="apply ${draft.applying?"applying":""}" data-apply ${(!draft.dirty && !draft.applying)?"disabled":""}>${draft.applying?"Применяется…":"Применить"}</button>
       <div class="row"><span>Вентилятор</span><strong>${this.fanLabel(m.fan)}</strong></div>
       <div class="row"><span>Жалюзи</span><strong>${this.swingLabel(m.swing)}</strong></div>
-      <p class="notice">Команды записи выполняются только после подтверждения.</p>
+      ${draft.error?`<p class="notice error">${draft.error}</p>`:""}
+      <p class="notice">Изменения накапливаются в панели и отправляются в кондиционер одной кнопкой «Применить».</p>
     </section>`;
   }
 
@@ -263,15 +310,49 @@ class NikasClimatePanel extends HTMLElement {
 
   bindControls(m) {
     const content = this.shadowRoot.getElementById("content");
-    if (!content || !m.climate) return;
-    content.querySelectorAll("[data-mode]").forEach((b) => b.onclick = () =>
-      this.call("climate.set_hvac_mode",{entity_id:m.climate.entity_id,hvac_mode:b.dataset.mode})
-    );
-    content.querySelectorAll("[data-delta]").forEach((b) => b.onclick = () => {
-      const base = m.target ?? 22;
-      const next = Math.max(17,Math.min(30,base + Number(b.dataset.delta)));
-      this.call("climate.set_temperature",{entity_id:m.climate.entity_id,temperature:next});
+    if (!content || !m.climate || this._tab !== "control") return;
+    const draft = this.draftFor(m);
+
+    content.querySelectorAll("[data-mode]").forEach((b) => b.onclick = () => {
+      if (draft.applying) return;
+      draft.mode = b.dataset.mode;
+      draft.dirty = this.draftChanged(m,draft);
+      draft.error = null;
+      this.patch();
     });
+
+    content.querySelectorAll("[data-delta]").forEach((b) => b.onclick = () => {
+      if (draft.applying) return;
+      const base = Number.isFinite(Number(draft.target)) ? Number(draft.target) : (m.target ?? 22);
+      draft.target = Math.max(17,Math.min(30,base + Number(b.dataset.delta)));
+      draft.dirty = this.draftChanged(m,draft);
+      draft.error = null;
+      this.patch();
+    });
+
+    const apply = content.querySelector("[data-apply]");
+    if (apply) apply.onclick = async () => {
+      if (!draft.dirty || draft.applying) return;
+      draft.applying = true;
+      draft.error = null;
+      this.patch();
+      try {
+        const tempChanged = m.target != null && Number(draft.target) !== Number(m.target);
+        const modeChanged = draft.mode !== m.mode;
+        if (modeChanged) {
+          await this._hass.callService("climate","set_hvac_mode",{entity_id:m.climate.entity_id,hvac_mode:draft.mode});
+        }
+        if (tempChanged) {
+          await this._hass.callService("climate","set_temperature",{entity_id:m.climate.entity_id,temperature:draft.target});
+        }
+        draft.dirty = false;
+      } catch (err) {
+        draft.applying = false;
+        draft.dirty = true;
+        draft.error = `Не удалось применить: ${err?.message || err}`;
+      }
+      this.patch();
+    };
   }
 }
 
