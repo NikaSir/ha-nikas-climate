@@ -1,0 +1,14 @@
+{
+  "title": "NikaS Climate",
+  "config": {
+    "step": {
+      "user": {
+        "title": "NikaS Climate",
+        "description": "Добавить автономную панель локального управления кондиционерами."
+      }
+    },
+    "abort": {
+      "already_configured": "Панель уже добавлена."
+    }
+  }
+}
