@@ -3,11 +3,9 @@
   "name": "NikaS Climate",
   "codeowners": ["@NikaSir"],
   "config_flow": true,
-  "dependencies": ["http", "panel_custom"],
   "documentation": "https://github.com/NikaSir/ha-nikas-climate",
-  "integration_type": "service",
-  "iot_class": "local_push",
   "issue_tracker": "https://github.com/NikaSir/ha-nikas-climate/issues",
-  "requirements": [],
-  "version": "0.1.11"
+  "iot_class": "local_push",
+  "version": "0.1.12",
+  "requirements": []
 }
