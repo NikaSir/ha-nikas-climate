@@ -25,7 +25,7 @@ PANEL_STATIC_URL = "/nikas_climate_panel"
 PANEL_STATIC_REGISTERED = "panel_static_registered"
 PANEL_ROUTE_OWNER = "panel_route_owner"
 PANEL_DIRECTORY = Path(__file__).parent / "frontend"
-PANEL_BUNDLE = "nikas-climate-entry-131.js"
+PANEL_BUNDLE = "nikas-climate-entry-133.js"
 
 PANEL_METADATA = {
     "id": PANEL_ID,
