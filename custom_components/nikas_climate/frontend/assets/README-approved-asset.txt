@@ -1,0 +1,1 @@
+ballu-lagoon-approved.png is the approved Ballu Lagoon visual used by UI v1.3.6.
