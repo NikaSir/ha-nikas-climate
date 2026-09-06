@@ -1,0 +1,7 @@
+ballu-off.webp
+ballu-cool.webp
+ballu-heat.webp
+ballu-auto.webp
+ballu-dry.webp
+ballu-fan_only.webp
+ballu-unavailable.webp
