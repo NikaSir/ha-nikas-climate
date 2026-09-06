@@ -1,0 +1,1 @@
+State hero assets for Ballu Lagoon are binary WebP files added through the Git data API. UI v1.4.0 selects them by the current climate mode: off, cool, heat, auto, dry, fan_only, unavailable.
