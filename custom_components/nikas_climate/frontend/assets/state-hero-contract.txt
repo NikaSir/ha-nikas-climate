@@ -1,0 +1,1 @@
+Hero image tracks the current climate mode exactly, analogous to the S8 OMNI state hero pattern. It must not reflect un-applied draft values.
