@@ -1,0 +1,7 @@
+off -> ballu-off.webp
+cool -> ballu-cool.webp
+heat -> ballu-heat.webp
+auto -> ballu-auto.webp
+dry -> ballu-dry.webp
+fan_only -> ballu-fan_only.webp
+unavailable -> ballu-unavailable.webp
