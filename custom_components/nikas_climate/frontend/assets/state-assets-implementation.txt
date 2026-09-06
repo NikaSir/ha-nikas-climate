@@ -1,0 +1,1 @@
+Implementation note: UI v1.4.0 chooses a hero asset from current climate state and never from draft target state.
