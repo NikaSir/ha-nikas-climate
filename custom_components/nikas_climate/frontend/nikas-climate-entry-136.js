@@ -16,7 +16,7 @@ if (Panel && !Panel.prototype.__nikasUi136Patched) {
   const previousEnsureRegistries = Panel.prototype.ensureRegistries;
 
   Panel.prototype.isHumidityEntity = function(state) {
-    return Boolean(state?.entity_id?.startsWith("sensor.") && (state.attributes?.device_class === "humidity" || state.attributes?.unit_of_measurement === "%"));
+    return Boolean(state?.entity_id?.startsWith("sensor.") && state.attributes?.device_class === "humidity");
   };
 
   Panel.prototype.resolveRoomHumidityEntity = function(room, climate) {
