@@ -20,7 +20,7 @@ if(Panel&&!Panel.prototype.__history155){
   if(active)d+='H310';
   const time=t=>new Intl.DateTimeFormat(this._hass?.locale?.language||'ru',{timeZone:this._hass?.config?.time_zone||undefined,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(t);
   const ticks=[low,(low+high)/2,high].map(v=>`<line x1="40" x2="310" y1="${y(v)}" y2="${y(v)}" stroke="var(--divider-color)"/><text x="34" y="${y(v)+4}" text-anchor="end">${v.toFixed(1)}</text>`).join('');
-  return `<svg viewBox="0 0 330 170" role="img" aria-label="История измерений, ${unit}"><text x="4" y="12">${unit}</text>${ticks}<path data-history-line d="${d}" fill="none" stroke="var(--primary-color)" stroke-width="2"/><text x="40" y="153">${escape155(time(start))}</text><text x="310" y="169" text-anchor="end">${escape155(time(end))}</text></svg><p>Мин. ${(low+pad).toFixed(1)} ${unit} · Макс. ${(high-pad).toFixed(1)} ${unit}</p>`;
+  return `<svg viewBox="0 0 330 170" role="img" aria-label="История измерений, ${unit}"><text x="4" y="12">${unit}</text>${ticks}<path data-history-line d="${d}" fill="none" stroke="var(--primary-color)" stroke-width="2"/><text x="40" y="153">${escape155(time(start))}</text><text x="310" y="153" text-anchor="end">${escape155(time(end))}</text></svg><p>Мин. ${(low+pad).toFixed(1)} ${unit} · Макс. ${(high-pad).toFixed(1)} ${unit}</p>`;
  };
  Panel.prototype.mountStatistics154=async function(){
   if(this._tab!=='statistics')return;
