@@ -1,0 +1,122 @@
+name: Repository checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository:
+    name: Repository validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate JSON files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for path in Path(".").rglob("*.json"):
+              if ".git" in path.parts:
+                  continue
+              json.loads(path.read_text(encoding="utf-8"))
+              print(f"OK {path}")
+          PY
+
+      - name: Compile Python sources
+        run: python -m compileall -q custom_components
+
+      - name: Validate frontend syntax and active entrypoint
+        shell: bash
+        run: |
+          for module in custom_components/nikas_climate/frontend/*.js; do
+            node --check "$module"
+          done
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          component = Path("custom_components/nikas_climate")
+          panel = (component / "panel.py").read_text(encoding="utf-8")
+          manifest = __import__("json").loads((component / "manifest.json").read_text(encoding="utf-8"))
+          match = re.search(r'^PANEL_BUNDLE\s*=\s*["\']([^"\']+\.js)["\']', panel, re.MULTILINE)
+          if match is None:
+              raise SystemExit("PANEL_BUNDLE does not identify the active JavaScript entrypoint")
+          entry = component / "frontend" / match.group(1)
+          if not entry.is_file():
+              raise SystemExit(f"Active panel entrypoint is missing: {entry}")
+          if not manifest.get("version"):
+              raise SystemExit("Integration version is missing")
+          print(f"OK active entrypoint {entry}")
+          PY
+
+      - name: Reject tracked credentials and private keys
+        shell: bash
+        run: |
+          forbidden="$(git ls-files | grep -E '(^|/)(secrets\.yaml|\.env($|\.)|.*\.(pem|key|p12)$)' | grep -v -E '(^|/)\.env\.example$' || true)"
+          if [ -n "$forbidden" ]; then
+            echo 'Forbidden credential/key-like files are tracked:'
+            echo "$forbidden"
+            exit 1
+          fi
+
+  hacs:
+    name: HACS validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate HACS repository
+        uses: hacs/action@main
+        with:
+          category: integration
+          comment: false
+          # This project is distributed as a custom HACS repository. Topics are
+          # repository metadata and do not affect integration compatibility.
+          ignore: topics
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate Home Assistant integration
+        uses: home-assistant/actions/hassfest@master
+
+  quality-gate:
+    name: NikaS quality gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - repository
+      - hacs
+      - hassfest
+    steps:
+      - name: Require every validation job
+        env:
+          REPOSITORY_RESULT: ${{ needs.repository.result }}
+          HACS_RESULT: ${{ needs.hacs.result }}
+          HASSFEST_RESULT: ${{ needs.hassfest.result }}
+        run: |
+          test "$REPOSITORY_RESULT" = success
+          test "$HACS_RESULT" = success
+          test "$HASSFEST_RESULT" = success
