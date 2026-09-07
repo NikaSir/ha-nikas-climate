@@ -13,7 +13,7 @@ const HERO_IMAGES_150 = {
   unavailable: `${ASSET_ROOT_150}/hero-off.webp?v=${PATCH_UI_VERSION}`,
 };
 const MODE_META_150 = {
-  off:["Выкл.","mdi:power"],
+  off:["Выключен","mdi:power"],
   cool:["Охлаждение","mdi:snowflake"],
   heat:["Обогрев","mdi:fire"],
   auto:["Авто","mdi:autorenew"],
@@ -40,6 +40,7 @@ if (Panel && !Panel.prototype.__nikasUi150Patched) {
     const metric = (icon,title,value)=>`<div class="u147-metric"><ha-icon icon="${icon}"></ha-icon><div><span>${title}</span><strong>${value}</strong></div></div>`;
     const status = (icon,title,value,active=false)=>`<div class="u147-status ${active ? "active" : ""}"><ha-icon icon="${icon}"></ha-icon><div><span>${title}</span><strong>${value}</strong></div></div>`;
     const swingValue = m?.swing === "off" ? "Выкл." : "Вкл.";
+    const modeStatus = m?.mode === "off" ? "Выкл." : esc150(mode[0]);
 
     return `<section class="card u147-summary ${stateClass}">
       <div class="u147-hero">
@@ -53,12 +54,12 @@ if (Panel && !Panel.prototype.__nikasUi150Patched) {
       <div class="u147-metrics">
         ${metric("mdi:thermometer","Температура",`${this.fmt(m?.roomTemp,1)}°`)}
         ${metric("mdi:water-outline","Влажность",`${this.fmt(m?.humidity,0)}%`)}
-        ${metric("mdi:thermometer-check-outline","Уставка",`${this.fmt(m?.target,0)}°`)}
+        ${metric("mdi:thermometer","Уставка",`${this.fmt(m?.target,0)}°`)}
         ${metric("mdi:air-conditioner","У блока",`${this.fmt(m?.indoor,1)}°`)}
       </div>
 
       <div class="u147-band">
-        ${status(mode[1],"Режим",esc150(mode[0]))}
+        ${status(mode[1],"Режим",modeStatus)}
         ${status(this.fanIcon(m?.fan),"Вентилятор",esc150(fan))}
         ${status("mdi:blinds-horizontal","Качание",swingValue,m?.swing !== "off")}
       </div>
