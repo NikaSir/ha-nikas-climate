@@ -11,7 +11,7 @@ const context=vm.createContext({console,Map,Set,Date,Number,String,Boolean,Math,
 });
 const seen=new Set();
 function load(file){if(seen.has(file))return;seen.add(file);let source=fs.readFileSync(file,'utf8');source=source.replace(/^import "([^"?]+)(?:\?[^"\n]*)?";$/gm,(_,relative)=>{load(path.resolve(path.dirname(file),relative));return '';});vm.runInContext(`(()=>{${source}\n})();`,context,{filename:file});}
-load(path.join(root,'nikas-climate-entry-154.js'));
+load(path.join(root,'nikas-climate-entry-155.js'));
 const Panel=classes.get('nikas-climate-panel');const p=new Panel();
 p._entityRegistry=[];
 p._hass={states:{'climate.living':{entity_id:'climate.living',state:'off',attributes:{friendly_name:'Кондиционер в зале',temperature:null,current_temperature:null,fan_mode:'auto',swing_mode:'off'}}}};
@@ -30,23 +30,11 @@ assert.equal(p.isHumidityEntity({entity_id:'sensor.humidity',attributes:{device_
 assert.match(p.statistics(m),/data-history-chart="temperature"/);
 assert.match(p.statistics(m),/data-history-chart="humidity"/);
 console.log('PASS: summary missing data, OFF, swing, connection, humidity classification and statistics slots');
-(async()=>{
-  const configs=[];
-  context.window={loadCardHelpers:async()=>({createCardElement:config=>{configs.push(config);return {};}})};
-  const slots={temperature:{isConnected:true,replaceChildren(card){this.card=card;}},humidity:{isConnected:true,replaceChildren(card){this.card=card;}}};
-  p.shadowRoot={querySelectorAll:()=>[],querySelector:selector=>slots[selector.includes('temperature')?'temperature':'humidity']};
-  p._tab='statistics';
-  p._selected='living';
-  for(const [id,type] of [['sensor.sensor_th_zb_11_temperature','temperature'],['sensor.sensor_th_zb_11_humidity','humidity']])p._hass.states[id]={entity_id:id,state:'22',attributes:{device_class:type}};
-  await p.mountStatistics154();
-  assert.equal(configs.length,2);
-  assert.equal(configs[0].entities[0].entity,'sensor.sensor_th_zb_11_temperature');
-  assert.equal(configs[1].entities[0].entity,'sensor.sensor_th_zb_11_humidity');
-  assert.equal(configs[0].hours_to_show,24);
-  p._statisticsHours=168;await p.mountStatistics154();
-  assert.equal(configs.at(-1).hours_to_show,168);
-  assert.equal(slots.humidity.card.hass,p._hass);
-  p._selected='veranda';await p.mountStatistics154();
-  assert.equal(slots.humidity.textContent,'Влажность: датчик не выбран');
-  console.log('PASS: native HA history card sources, periods, hass binding, missing sensor');
-})().catch(error=>{console.error(error);process.exitCode=1;});
+const raw=[[{entity_id:'sensor.t',state:'24',last_changed:'2026-09-07T00:00:00Z'},{state:'unavailable',last_changed:'2026-09-07T01:00:00Z'},{state:'',last_changed:'2026-09-07T02:00:00Z'},{state:'26',last_changed:'2026-09-07T03:00:00Z'}]];
+const points=p.parseRoomHistory155(raw,'sensor.t');
+assert.equal(points.length,4);assert.equal(points[1][1],null);assert.equal(points[2][1],null);
+assert.equal(p.parseRoomHistory155(raw,'sensor.other').length,0);
+const graph=p.drawRoomHistory155(points,Date.parse('2026-09-07T00:00:00Z'),Date.parse('2026-09-08T00:00:00Z'),'°C');
+assert.equal((graph.match(/M[0-9]/g)||[]).length,2);
+assert.match(p.drawRoomHistory155([],0,100,'°C'),/измерений нет/);
+console.log('PASS: actual history response parsing, unavailable and empty values, separated graph segments');
