@@ -175,8 +175,8 @@ class NikasClimatePanel extends HTMLElement {
     const roomTempEntity = this.resolveRoomTempEntity(room, climate);
     const roomTempState = roomTempEntity ? this._hass?.states?.[roomTempEntity] : null;
     const roomTempRaw = Number(roomTempState?.state);
-    const indoorRaw = Number(climate?.attributes?.current_temperature);
-    const targetRaw = Number(climate?.attributes?.temperature);
+    const indoorRaw = Number(climate?.attributes?.current_temperature ?? NaN);
+    const targetRaw = Number(climate?.attributes?.temperature ?? NaN);
     const available = Boolean(climate && !["unavailable","unknown"].includes(climate.state));
     const roomAvailable = Boolean(roomTempState && !["unavailable","unknown"].includes(roomTempState.state));
     const features = {
@@ -214,7 +214,7 @@ class NikasClimatePanel extends HTMLElement {
 
   connection(m) {
     if (!m.climate || !m.available) return {tone:"offline", label:"Нет связи", fresh:"Нет данных"};
-    return {tone:"local", label:"Локально", fresh:"Данные актуальны"};
+    return {tone:"local", label:"Локально", fresh:"Получено в HA"};
   }
 
   activeSwingMode(m, draft=null) {
