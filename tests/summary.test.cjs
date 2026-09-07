@@ -11,7 +11,7 @@ const context=vm.createContext({console,Map,Set,Date,Number,String,Boolean,Math,
 });
 const seen=new Set();
 function load(file){if(seen.has(file))return;seen.add(file);let source=fs.readFileSync(file,'utf8');source=source.replace(/^import "([^"?]+)(?:\?[^"\n]*)?";$/gm,(_,relative)=>{load(path.resolve(path.dirname(file),relative));return '';});vm.runInContext(`(()=>{${source}\n})();`,context,{filename:file});}
-load(path.join(root,'nikas-climate-entry-155.js'));
+load(path.join(root,'nikas-climate-entry-156.js'));
 const Panel=classes.get('nikas-climate-panel');const p=new Panel();
 p._entityRegistry=[];
 p._hass={states:{'climate.living':{entity_id:'climate.living',state:'off',attributes:{friendly_name:'Кондиционер в зале',temperature:null,current_temperature:null,fan_mode:'auto',swing_mode:'off'}}}};
@@ -38,3 +38,13 @@ const graph=p.drawRoomHistory155(points,Date.parse('2026-09-07T00:00:00Z'),Date.
 assert.equal((graph.match(/M[0-9]/g)||[]).length,2);
 assert.match(p.drawRoomHistory155([],0,100,'°C'),/измерений нет/);
 console.log('PASS: actual history response parsing, unavailable and empty values, separated graph segments');
+
+for(const mode of ['heat','cool','auto','dry','fan_only']){
+ const hero=p.hero156({...m,mode,available:true});
+ assert.match(hero,new RegExp('hero-'+mode+'-v3.png'));
+ assert.doesNotMatch(hero,/<svg|data-airflow/);
+ assert(fs.existsSync(path.join(root,'assets','hero-'+mode+'-v3.png')));
+}
+assert.match(p.hero156({...m,mode:'off'}),/hero-off-v2.png/);
+assert.match(p.hero156({...m,mode:'heat',available:false}),/hero-off-v2.png/);
+console.log('PASS: distinct mode assets and closed unit when OFF/unavailable');
