@@ -89,6 +89,9 @@ jobs:
         with:
           category: integration
           comment: false
+          # This project is distributed as a custom HACS repository. Topics are
+          # repository metadata and do not affect integration compatibility.
+          ignore: topics
 
   hassfest:
     name: Hassfest
