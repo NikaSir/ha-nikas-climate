@@ -8,7 +8,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "custom_components" / "nikas_climate" / "frontend"
-SOURCE_ENTRYPOINT = FRONTEND / "nikas-climate-entry-158.js"
+SOURCE_ENTRYPOINT = FRONTEND / "nikas-climate-entry-159.js"
 PRODUCTION_BUNDLE = FRONTEND / "nikas-climate-production.js"
 IMPORT_RE = re.compile(
     r'^import\s+["\'](?P<path>\./[^"\'?]+\.js)(?:\?[^"\']*)?["\'];\s*$',
