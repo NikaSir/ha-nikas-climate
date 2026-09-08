@@ -1,7 +1,7 @@
 import "./nikas-climate-entry-156.js?v=1.4.16";
 
 const Panel = customElements.get("nikas-climate-panel");
-const UI158 = "1.4.20";
+const UI158 = "1.4.21";
 const TRANSFORM_KEY158 = "nikas_climate.view_transform.v2";
 const PEERS158 = [
   {
@@ -533,10 +533,14 @@ if (Panel && !Panel.prototype.__ui158) {
 
     if (devices && oldDevices.length === devices.children.length) {
       const freshDevices = [...devices.children];
-      const retained = oldDevices.map((node, index) => morph158(node, freshDevices[index]));
-      devices.replaceChildren(...retained);
+      if (!oldDevices.every((node, index) => node === freshDevices[index])) {
+        const retained = oldDevices.map((node, index) => morph158(node, freshDevices[index]));
+        if (!retained.every((node, index) => node === devices.children[index])) {
+          devices.replaceChildren(...retained);
+        }
+      }
     }
-    if (content && oldContent && oldView === nextView && content.firstElementChild) {
+    if (content && oldContent && oldView === nextView && content.firstElementChild && content.firstElementChild !== oldContent) {
       const retained = morph158(oldContent, content.firstElementChild);
       content.replaceChildren(retained);
     }
@@ -544,7 +548,7 @@ if (Panel && !Panel.prototype.__ui158) {
       viewport.scrollTop = scrollTop;
       viewport.scrollLeft = scrollLeft;
     }
-    if (active?.isConnected && typeof active.focus === "function") {
+    if (active?.isConnected && root?.activeElement !== active && typeof active.focus === "function") {
       try { active.focus({preventScroll: true}); } catch (_error) { active.focus(); }
     }
     this.__domView158 = nextView;

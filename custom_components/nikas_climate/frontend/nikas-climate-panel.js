@@ -279,6 +279,65 @@ class NikasClimatePanel extends HTMLElement {
       (m.features?.turbo != null && draft.turbo !== m.features.turbo);
   }
 
+  __compatibleDomNode(current, fresh) {
+    return current?.nodeType === fresh?.nodeType &&
+      (current.nodeType !== 1 || current.tagName === fresh.tagName);
+  }
+
+  __reconcileDomNode(current, fresh) {
+    if (!this.__compatibleDomNode(current, fresh)) {
+      current.replaceWith(fresh);
+      return fresh;
+    }
+    if (current.nodeType === 3) {
+      if (current.nodeValue !== fresh.nodeValue) current.nodeValue = fresh.nodeValue;
+      return current;
+    }
+    for (const attribute of [...current.attributes]) {
+      if (!fresh.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...fresh.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+    // History is mounted asynchronously. Empty placeholders in statistics()
+    // must not tear down a live graph on every unrelated HA state update.
+    if (!current.hasAttribute("data-history-chart")) {
+      this.__reconcileDomChildren(current, [...fresh.childNodes]);
+    }
+    return current;
+  }
+
+  __reconcileDomChildren(container, freshChildren) {
+    for (let index = 0; index < Math.max(container.childNodes.length, freshChildren.length); index += 1) {
+      const current = container.childNodes[index];
+      const fresh = freshChildren[index];
+      if (!current && fresh) {
+        container.append(fresh);
+        continue;
+      }
+      if (current && !fresh) {
+        current.remove();
+        index -= 1;
+        continue;
+      }
+      this.__reconcileDomNode(current, fresh);
+    }
+  }
+
+  __patchMarkup(container, markup, preserve=true) {
+    if (!container) return;
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+    const freshChildren = [...template.content.childNodes];
+    if (!preserve) {
+      container.replaceChildren(...freshChildren);
+      return;
+    }
+    this.__reconcileDomChildren(container, freshChildren);
+  }
+
   render() {
     this.shadowRoot.innerHTML = `
       <style>
@@ -331,11 +390,18 @@ class NikasClimatePanel extends HTMLElement {
     if (refresh) refresh.disabled = this._refreshing;
 
     const devices = this.shadowRoot.getElementById("devices");
-    devices.innerHTML = models.map((m) => { const h=this.health(m); const active=m.room.key===selected.room.key; return `<button class="peer ${active?"active":""}" data-room="${m.room.key}"><i class="peer-lamp ${h.tone}"></i><span>${m.room.title}</span></button>`; }).join("");
+    this.__patchMarkup(devices, models.map((m) => {
+      const h=this.health(m), active=m.room.key===selected.room.key;
+      const icon=typeof this.peerStateIcon==="function" ? `<ha-icon class="peer-mode-icon" icon="${this.peerStateIcon(m)}"></ha-icon>` : "";
+      return `<button class="peer ${active?"active":""}" data-room="${m.room.key}">${icon}<i class="peer-lamp ${h.tone}"></i><span>${m.room.title}</span></button>`;
+    }).join(""));
     devices.querySelectorAll(".peer").forEach((b) => b.onclick = () => { this._selected=b.dataset.room; localStorage.setItem("nikas_climate.peer",this._selected); this.shadowRoot.querySelector(".viewport").scrollTop=0; this.patch(); });
     this.shadowRoot.querySelectorAll(".bottom-nav button").forEach((b) => b.classList.toggle("active",b.dataset.tab===this._tab));
     const content = this.shadowRoot.getElementById("content");
-    content.innerHTML = this._tab === "summary" ? this.summary(selected) : this._tab === "control" ? this.control(selected) : this._tab === "statistics" ? this.statistics(selected) : this.diagnostics(selected);
+    const viewKey = `${selected.room.key}:${this._tab}`;
+    const markup = this._tab === "summary" ? this.summary(selected) : this._tab === "control" ? this.control(selected) : this._tab === "statistics" ? this.statistics(selected) : this.diagnostics(selected);
+    this.__patchMarkup(content, markup, this.__contentView === viewKey);
+    this.__contentView = viewKey;
     this.bindControls(selected);
     if (this._tab === "summary") this.ensureHistory(selected);
   }
