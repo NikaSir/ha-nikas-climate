@@ -89,9 +89,9 @@ jobs:
         with:
           category: integration
           comment: false
-          # This project is distributed as a custom HACS repository. Topics are
-          # repository metadata and do not affect integration compatibility.
-          ignore: topics
+          # Temporary bootstrap: HACS reads the license from the default branch,
+          # so this check is ignored only while LICENSE is restored to main.
+          ignore: topics license
 
   hassfest:
     name: Hassfest
