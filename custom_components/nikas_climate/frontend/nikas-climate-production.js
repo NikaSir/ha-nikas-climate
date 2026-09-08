@@ -4004,7 +4004,7 @@ if(Panel&&!Panel.prototype.__ui156){
 /* source: nikas-climate-entry-158.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI158 = "1.4.18";
+const UI158 = "1.4.19";
 const TRANSFORM_KEY158 = "nikas_climate.view_transform.v2";
 const PEERS158 = [
   {
@@ -4088,6 +4088,26 @@ if (Panel && !Panel.prototype.__ui158) {
   const previousRender = Panel.prototype.render;
   const previousPatch = Panel.prototype.patch;
   const previousDiagnostics = Panel.prototype.diagnostics;
+
+  // Measure after all UI styles and HA icons have their final dimensions.
+  Panel.prototype.__fitSummary159 = function() {
+    const root = this.shadowRoot;
+    const viewport = root?.querySelector(".viewport");
+    const content = root?.querySelector(".content");
+    const card = root?.querySelector(".u154-summary");
+    const photo = root?.querySelector(".u154-photo-wrap");
+    if (!viewport || !content || !card || !photo) return;
+    viewport.dataset.shortSummary = viewport.clientHeight < 480 ? "1" : "0";
+    const inset = parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const chrome = card.offsetHeight - photo.offsetHeight;
+    const height = Math.max(0, Math.min(252, viewport.clientHeight - 2 * inset - chrome));
+    if (Math.abs(photo.offsetHeight - height) > 1) photo.style.height = `${height}px`;
+    const note = root.querySelector(".u154-note");
+    if (note) note.style.marginTop = "0px";
+  };
+  Panel.prototype.__fixNikasUi154 = function() {
+    this.__installNikasUi154();
+  };
 
   Panel.prototype.__viewKey158 = function() {
     return `${TRANSFORM_KEY158}:${this._selected || "living"}:${this._tab || "summary"}`;
@@ -4414,6 +4434,10 @@ if (Panel && !Panel.prototype.__ui158) {
       style.dataset.ui158 = "1";
       style.textContent = `
         .viewport{scroll-padding-bottom:34px}
+        .viewport[data-short-summary="1"] .u154-summary{gap:5px!important}
+        .viewport[data-short-summary="1"] .u154-head{min-height:68px;padding-top:0;padding-bottom:4px}
+        .viewport[data-short-summary="1"] .u154-band{min-height:58px}
+        .viewport[data-short-summary="1"] .u154-status{padding:5px 4px}
         .content{padding:12px 12px calc(38px + env(safe-area-inset-bottom))!important;transform-origin:top left;will-change:transform}
         .viewport[data-zoomed="1"]{overflow:hidden!important;touch-action:none!important;cursor:grab}
         .viewport[data-zoomed="1"]:active{cursor:grabbing}
@@ -4472,6 +4496,17 @@ if (Panel && !Panel.prototype.__ui158) {
       refreshStatus.dataset.show = this._refreshState158 === "error" ? "1" : "0";
     }
     this.__installZoom158();
+    if (typeof ResizeObserver !== "undefined") {
+      this.__summaryObserver159 ||= new ResizeObserver(() => {
+        frame158(() => { this.__fitSummary159(); this.__applyTransform158(); });
+      });
+      this.__summaryObserver159.disconnect();
+      for (const selector of [".viewport", ".u154-summary"]) {
+        const element = root.querySelector(selector);
+        if (element) this.__summaryObserver159.observe(element);
+      }
+    }
+    this.__fitSummary159();
     frame158(() => this.__applyTransform158());
   };
 
