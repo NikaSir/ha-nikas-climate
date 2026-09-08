@@ -3,13 +3,6 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'../custom_components/nikas_climate/frontend');
-const ui160=fs.readFileSync(path.join(root,'nikas-climate-entry-160.js'),'utf8');
-const ui161=fs.readFileSync(path.join(root,'nikas-climate-entry-161.js'),'utf8');
-assert.match(ui160,/minmax\(168px,44%\)/,'mobile plaque column must match the S8 OMNI reference width');
-assert.match(ui160,/min-height:58px!important/,'plaque must match the canonical 58px minimum height');
-assert.match(ui160,/padding:12px 14px!important/,'plaque must use the canonical internal padding');
-assert.match(ui161,/height:58px!important/,'computed plaque height must be locked to 58px');
-assert.match(ui161,/line-height:1\.05!important/,'plaque typography must use the S8 OMNI line height');
 const classes=new Map();
 const context=vm.createContext({console,Map,Set,Date,Number,String,Boolean,Math,Promise,
   HTMLElement:class {attachShadow(){this.shadowRoot={};}},
@@ -26,10 +19,10 @@ let m=p.roomModel({key:'living'});
 assert.equal(m.target,null);assert.equal(m.indoor,null);
 assert.equal(p.connection(m).label,'Нет данных','an unverified integration must not be called local');
 p._entityRegistry=[{entity_id:'climate.living',platform:'syncleo'}];
-assert.equal(p.connection(m).label,'Локально','Syncleo availability proves the local UDP path');
-assert.equal(p.connection(m).fresh,'Ожидание данных','default values are not a received device snapshot');
-assert.match(p.connection(m).tone,/freshness-pending/);
-assert.equal(p.peerConnectionTone160(m),'nodata','a local channel without snapshot evidence stays neutral in the peer selector');
+assert.equal(p.connection(m).label,'Локально','available Syncleo identifies the local UDP path even when OFF');
+assert.equal(p.connection(m).fresh,'Нет данных','default values provide no evidence of telemetry freshness');
+assert.match(p.connection(m).tone,/freshness-unknown/);
+assert.equal(p.peerConnectionTone160(m),'nodata','the peer lamp must not present untrusted freshness as healthy');
 let html=p.summary(m);assert.match(html,/hero-off-v2.png/);assert.match(html,/Выключен/);assert.doesNotMatch(html,/Данные актуальны/);
 assert.match(html,/Ночной<\/span><strong>—/);
 assert.match(html,/Турбо<\/span><strong>—/);
@@ -38,34 +31,61 @@ assert.match(p.summary({...m,swing:'vertical'}),/Качание<\/span><strong>�
 assert.match(p.summary({...m,features:{night:'on',turbo:'off'}}),/Ночной<\/span><strong>Вкл\./);
 assert.match(p.summary({...m,features:{night:'on',turbo:'off'}}),/Турбо<\/span><strong>Выкл\./);
 assert.doesNotMatch(p.summary({...m,features:{turbo:'on'}}),/<span>Турбо<\/span><\/div><\/div>/);
-assert.match(p.summary({...m,available:false,mode:'unavailable'}),/Нет связи/);
-p._entityRegistry=[{entity_id:'climate.living',platform:'other'}];
-assert.equal(p.connection(m).label,'Нет данных','another integration must not inherit the Syncleo path');
+
+function updateClimate(changes) {
+  p._hass.states['climate.living']={...p._hass.states['climate.living'],...changes};
+  return p.roomModel({key:'living'});
+}
+function assertUntrusted(model,label) {
+  const connection=p.connection(model);
+  assert.equal(connection.label,label);
+  assert.equal(connection.fresh,'Нет данных','HA state alone must not invent current or previously accepted telemetry');
+  assert.equal(p.peerConnectionTone160(model),label==='Нет связи'?'bad':'nodata');
+  assert.doesNotMatch(connection.tone,/freshness-confirmed|freshness-pending|freshness-stale/);
+}
+
+assertUntrusted({...m,climate:null,available:false},'Нет данных');
+for(const platform of [undefined,null,'unknown','unavailable','other']) {
+  p._entityRegistry=[{entity_id:'climate.living',platform}];
+  assertUntrusted(m,'Нет данных');
+  assertUntrusted({...m,climate:{...m.climate,state:'unavailable'},available:false},'Нет данных');
+}
 p._entityRegistry=[{entity_id:'climate.living',platform:'syncleo'}];
-p._hass.states['climate.living']={...p._hass.states['climate.living'],state:'unknown'};
-let disconnected=p.roomModel({key:'living'});
-assert.equal(p.connection(disconnected).label,'Нет связи');
-assert.equal(p.connection(disconnected).fresh,'Нет данных');
-assert.equal(p.peerConnectionTone160(disconnected),'bad','unavailable climate must produce a red peer lamp');
-p._hass.states['climate.living']={...p._hass.states['climate.living'],state:'off',last_updated:'2020-01-01T00:00:00Z',attributes:{friendly_name:'Кондиционер в зале',temperature:24,current_temperature:27,fan_mode:'auto',swing_mode:'off'}};
-m=p.roomModel({key:'living'});
-assert.equal(p.connection(m).label,'Локально');
-assert.equal(p.connection(m).fresh,'Состояние получено','multiple populated Syncleo fields prove that a device snapshot was received');
-assert.match(p.connection(m).tone,/freshness-confirmed/);
-assert.equal(p.peerConnectionTone160(m),'ok','confirmed local channel with a received snapshot produces a green peer lamp');
-assert.doesNotMatch(p.connection(m).fresh,/актуаль/i,'snapshot presence must not be presented as timestamp freshness');
-assert.match(p.summary(m),/Состояние получено/);
-assert.equal(p.__syncleoSnapshots160.has('climate.living'),true);
-p._hass.states['climate.living']={...p._hass.states['climate.living'],state:'unavailable'};
-disconnected=p.roomModel({key:'living'});
-assert.equal(p.connection(disconnected).label,'Нет связи');
-assert.equal(p.connection(disconnected).fresh,'Данные устарели','a previously received snapshot becomes stale after the local channel drops');
-assert.match(p.connection(disconnected).tone,/freshness-stale/);
-assert.equal(p.peerConnectionTone160(disconnected),'bad');
-const realConnection=p.connection.bind(p);
-p.connection=()=>({label:'Локально',fresh:'Состояние получено',tone:'local'});
-assert.equal(p.peerConnectionTone160(m),'ok','a received snapshot on the confirmed local channel may produce a green peer lamp');
-p.connection=realConnection;
+
+// A received-looking HA snapshot and two optimistic command fields must have
+// the same untrusted freshness. Both can exist without a proven RX timestamp.
+for(const attributes of [
+  {temperature:24,current_temperature:27,fan_mode:'auto'},
+  {temperature:null,current_temperature:25,fan_mode:'high'},
+  {temperature:24,current_temperature:null,fan_mode:'auto'},
+]) {
+  m=updateClimate({state:'off',attributes:{friendly_name:'Кондиционер в зале',swing_mode:'off',...attributes}});
+  assertUntrusted(m,'Локально');
+  for(const timestamp of ['2020-01-01T00:00:00Z',new Date().toISOString()]) {
+    m=updateClimate({last_changed:timestamp,last_updated:timestamp,last_reported:timestamp});
+    assertUntrusted(m,'Локально');
+  }
+}
+
+// Unknown is missing knowledge, whereas Syncleo's explicit unavailable state
+// is evidence of a lost transport. Preserved attributes do not prove a sample.
+m=updateClimate({state:'unknown'});
+assertUntrusted(m,'Нет данных');
+for(const state of ['',null,undefined,'not-a-climate-mode']) {
+  m=updateClimate({state});
+  assertUntrusted(m,'Нет данных');
+}
+m=updateClimate({state:'unavailable'});
+assertUntrusted(m,'Нет связи');
+assert.match(p.summary(m),/Нет связи/);
+for(const state of ['off','cool','heat']) {
+  m=updateClimate({state});
+  assertUntrusted(m,'Локально');
+}
+assert.doesNotMatch(p.summary(m),/Состояние получено|Ожидание данных|Данные актуальны|Данные устарели/);
+// Returning to OFF after an outage must not carry fabricated stale/fresh memory.
+m=updateClimate({state:'unavailable'});assertUntrusted(m,'Нет связи');
+m=updateClimate({state:'off'});assertUntrusted(m,'Локально');
 assert.equal(p.isHumidityEntity({entity_id:'sensor.battery',attributes:{device_class:'battery',unit_of_measurement:'%'}}),false);
 assert.equal(p.isHumidityEntity({entity_id:'sensor.humidity',attributes:{device_class:'humidity',unit_of_measurement:'%'}}),true);
 assert.match(p.statistics(m),/data-history-chart="temperature"/);

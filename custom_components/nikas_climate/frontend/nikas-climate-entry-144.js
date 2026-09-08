@@ -103,7 +103,9 @@ if (Panel && !Panel.prototype.__nikasUi144Patched) {
     const row = (name,value) => `<div class="row"><span>${name}</span><strong>${value}</strong></div>`;
     return `<section class="card u144-diag"><div class="page-head"><div class="section-title">Диагностика</div><div class="area">${esc(m?.room?.title)}</div></div>
       ${row("Состояние устройства",esc(h.label))}
-      ${row("Канал","Syncleo UDP / LAN")}
+      ${row("Канал",esc(this.connection(m).label))}
+      ${row("Актуальность показаний",esc(this.connection(m).fresh))}
+      <p class="notice">«Нет данных» во второй строке плашки означает отсутствие подтверждения актуальности. Syncleo не передаёт признак принятого ответа прибора; сохранённые показания и успешное обновление HA его не заменяют.</p>
       ${row("WAN","Не требуется")}
       ${row("Climate entity",esc(climate?.entity_id || "не найден"))}
       ${row("Config entry",esc(climateReg?.config_entry_id || "—"))}

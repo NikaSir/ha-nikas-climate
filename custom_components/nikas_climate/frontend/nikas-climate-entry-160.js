@@ -21,53 +21,35 @@ const PEERS160 = [
   },
 ];
 
-const finite160 = (value) => value !== null && value !== "" && Number.isFinite(Number(value));
-const known160 = (value) => value !== null && value !== undefined && !["", "—", "unknown", "unavailable"].includes(String(value));
-
 if (Panel && !Panel.prototype.__ui160) {
-  const previousConnection = Panel.prototype.connection;
   const previousRender = Panel.prototype.render;
   const previousPatch = Panel.prototype.patch;
 
-  Panel.prototype.__hasSyncleoSnapshot160 = function(m) {
-    const attributes = m?.climate?.attributes || {};
-    const evidence = [
-      finite160(attributes.current_temperature),
-      finite160(attributes.temperature),
-      known160(attributes.fan_mode),
-    ];
-    return evidence.filter(Boolean).length >= 2;
-  };
-
   Panel.prototype.connection = function(m) {
-    const base = previousConnection.call(this, m);
-    if (!m?.climate) return base;
+    const noData = {tone: "nodata", label: "Нет данных", fresh: "Нет данных"};
+    if (!m?.climate) return noData;
     const registry = this.registryEntry(m.climate.entity_id);
-    if (registry?.platform !== "syncleo") return base;
+    if (registry?.platform !== "syncleo") return noData;
 
-    this.__syncleoSnapshots160 ||= new Set();
-    const entityId = m.climate.entity_id;
-    const hasSnapshot = this.__hasSyncleoSnapshot160(m);
-    if (hasSnapshot) this.__syncleoSnapshots160.add(entityId);
-    const hadSnapshot = this.__syncleoSnapshots160.has(entityId);
-
-    if (!m.available) {
-      return {
-        tone: hadSnapshot ? "offline freshness-stale" : "offline freshness-none",
-        label: "Нет связи",
-        fresh: hadSnapshot ? "Данные устарели" : "Нет данных",
-      };
+    // Syncleo availability reports the local transport. HA values can also be
+    // optimistic command writes; their presence and HA timestamps prove no RX.
+    const state = m.climate.state;
+    if (state === "unavailable") {
+      return {tone: "offline freshness-none", label: "Нет связи", fresh: "Нет данных"};
     }
-    if (hasSnapshot) {
-      return {tone: "local freshness-confirmed", label: "Локально", fresh: "Состояние получено"};
+    if (!m.available || !["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"].includes(state)) {
+      return noData;
     }
-    return {tone: "local freshness-pending", label: "Локально", fresh: "Ожидание данных"};
+    // A received-sample timestamp/generation is not exported by Syncleo yet.
+    // Keep the known route, but do not invent freshness or stale-sample memory.
+    return {tone: "local freshness-unknown", label: "Локально", fresh: "Нет данных"};
   };
 
   Panel.prototype.peerConnectionTone160 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Состояние получено") return "ok";
+    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
+    if (connection.label === "Локально" && connection.fresh === "Данные устарели") return "warn";
     return "nodata";
   };
 
@@ -76,49 +58,6 @@ if (Panel && !Panel.prototype.__ui160) {
     if (!root) return;
     const version = root.querySelector?.(".header-title span");
     if (version) version.textContent = `UI v${UI160}`;
-    if (root.querySelector?.("style[data-nikas-ui160]") || typeof document === "undefined") return;
-    const style = document.createElement("style");
-    style.dataset.nikasUi160 = "1";
-    style.textContent = `
-      .u154-head{
-        grid-template-columns:minmax(0,1fr) minmax(168px,42%)!important;
-      }
-      .u154-connection .connection-indicator{
-        min-height:58px!important;
-        padding:12px 14px!important;
-        border-radius:18px!important;
-        column-gap:9px!important;
-      }
-      .connection-indicator.local.freshness-pending{
-        background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color))!important;
-        border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))!important;
-      }
-      .connection-indicator.local.freshness-pending .connection-lamp{
-        background:var(--success-color,#43a047)!important;
-      }
-      .connection-indicator.local.freshness-pending strong{
-        color:var(--success-color,#43a047)!important;
-      }
-      .connection-indicator.freshness-stale small{
-        color:var(--warning-color,#f6a623)!important;
-        font-weight:600!important;
-      }
-      @media(max-width:520px){
-        .u154-head{
-          grid-template-columns:minmax(0,1fr) minmax(168px,44%)!important;
-        }
-      }
-      @media(max-width:360px){
-        .u154-head{
-          grid-template-columns:minmax(0,1fr) minmax(160px,48%)!important;
-          gap:8px!important;
-        }
-        .u154-connection .connection-indicator{
-          padding-inline:11px!important;
-        }
-      }
-    `;
-    root.appendChild(style);
   };
 
   Panel.prototype.__updatePeerConnectionTones160 = function() {
@@ -133,7 +72,7 @@ if (Panel && !Panel.prototype.__ui160) {
       const tone = this.peerConnectionTone160(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Канал: ${connection.label}. Данные: ${connection.fresh}.`;
+      peer.title = `Канал: ${connection.label}. Актуальность: ${connection.fresh}.`;
     });
   };
 

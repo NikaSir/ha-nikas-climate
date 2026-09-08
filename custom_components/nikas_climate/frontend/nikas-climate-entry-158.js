@@ -432,7 +432,6 @@ if (Panel && !Panel.prototype.__ui158) {
       style.textContent = `
         .viewport{scroll-padding-bottom:34px}
         .viewport[data-short-summary="1"] .u154-summary{gap:5px!important}
-        .viewport[data-short-summary="1"] .u154-head{min-height:68px;padding-top:0;padding-bottom:4px}
         .viewport[data-short-summary="1"] .u154-band{min-height:58px}
         .viewport[data-short-summary="1"] .u154-status{padding:5px 4px}
         .content{padding:12px 12px calc(38px + env(safe-area-inset-bottom))!important;transform-origin:top left;will-change:transform}
@@ -440,7 +439,6 @@ if (Panel && !Panel.prototype.__ui158) {
         .viewport[data-zoomed="1"]:active{cursor:grabbing}
         .peer-selector{padding-top:4px!important;padding-bottom:4px!important}.peer{height:44px!important;min-height:44px}
         .row{min-width:0}.row>span{min-width:0}.row>strong{min-width:0;max-width:62%;overflow-wrap:anywhere;word-break:break-word}
-        .u154-mode strong{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
         .u154-metric span,.u154-status span,.u154-note,.u155-control-top small,.u136-control .u136-set span,.u136-control .u136-flap small,.u136-control .u136-feature small,.u144-pending,.u144-log,.history155 text{font-size:12px!important}
         .header-action#refresh{transition:transform .12s ease,color .18s ease,background .18s ease}
         .header-action#refresh:active{transform:scale(.90)}
