@@ -1,7 +1,7 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.46",
+  "integration_version": "0.1.47",
   "ui_version": "1.4.18",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
@@ -21,7 +21,10 @@
   "pull_to_refresh": false,
   "edge_overscroll": false,
   "horizontal_scroll_at_100_percent": false,
-  "zoom_range_percent": [75, 200],
+  "zoom_range_percent": [
+    75,
+    200
+  ],
   "zoom_rendering": "transform-without-layout-reflow",
   "zoom_state_scope": "peer-and-tab",
   "zoom_reset": "double-two-finger-tap",
@@ -29,24 +32,75 @@
   "summary_fit_to_working_viewport": true,
   "summary_layout_status": "approved_locked",
   "control_layout_status": "approved_locked",
-  "approved_tabs_immutable_without_explicit_user_request": ["summary", "control"],
+  "approved_tabs_immutable_without_explicit_user_request": [
+    "summary",
+    "control"
+  ],
   "state_update": "targeted-dom-patch",
   "command_confirmation": false,
   "command_apply_mode": "staged_apply_button",
-  "control_state_colors": {"current": "primary", "target": "success"},
+  "control_state_colors": {
+    "current": "primary",
+    "target": "success"
+  },
   "control_button_layout": "icon_above_label",
   "control_icon_emphasis": "large",
   "fan_speed_layout": "single_row_4_buttons",
-  "setpoint_order": ["decrease", "temperature", "increase", "single_outer_flap"],
-  "control_scope": ["temperature", "hvac_mode", "fan_mode", "single_outer_flap", "night", "turbo"],
-  "control_top_visual": ["room_title", "conditioner_image", "external_room_temperature"],
-  "summary_top_visual": ["conditioner_image", "connection_plaque"],
-  "summary_metric_row": ["room_temperature", "room_humidity", "target_temperature", "fan_mode"],
-  "summary_operating_modes": ["off", "cool", "heat", "auto", "dry", "fan_only"],
-  "summary_additional_status": ["night", "turbo", "single_outer_flap", "sensor_delta"],
+  "setpoint_order": [
+    "decrease",
+    "temperature",
+    "increase",
+    "single_outer_flap"
+  ],
+  "control_scope": [
+    "temperature",
+    "hvac_mode",
+    "fan_mode",
+    "single_outer_flap",
+    "night",
+    "turbo"
+  ],
+  "control_top_visual": [
+    "room_title",
+    "conditioner_image",
+    "external_room_temperature"
+  ],
+  "summary_top_visual": [
+    "conditioner_image",
+    "connection_plaque"
+  ],
+  "summary_metric_row": [
+    "room_temperature",
+    "room_humidity",
+    "target_temperature",
+    "fan_mode"
+  ],
+  "summary_operating_modes": [
+    "off",
+    "cool",
+    "heat",
+    "auto",
+    "dry",
+    "fan_only"
+  ],
+  "summary_additional_status": [
+    "night",
+    "turbo",
+    "single_outer_flap",
+    "sensor_delta"
+  ],
   "summary_temperature_chart": "moved_to_statistics",
-  "statistics_series": ["room_temperature", "target_temperature", "room_humidity"],
-  "internal_tabs": ["summary", "control", "statistics", "diagnostics"],
+  "statistics_series": [
+    "room_temperature",
+    "target_temperature",
+    "room_humidity"
+  ],
+  "internal_tabs": [
+    "summary",
+    "control",
+    "statistics",
+    "diagnostics"
+  ],
   "header_title_line_1": "Кондиционирование",
   "header_title_line_2": "UI v1.4.18",
   "header_title_is_only_return_control": true,
@@ -57,16 +111,35 @@
   "peer_mode_icon_source": "actual_hvac_mode",
   "connection_plaque_reference": "NikaS Standard 2.2 canonical connection plaque",
   "connection_plaque_mutation_allowed": false,
-  "connection_levels": ["channel", "freshness"],
+  "connection_levels": [
+    "channel",
+    "freshness"
+  ],
   "connection_plaque_scope": "summary-only",
   "control_transport": "Syncleo local UDP",
   "wan_required": false,
   "ir_remote_model": "one_way_unsynchronised",
-  "room_temperature_priority": ["shared_label_with_climate", "same_area", "explicit_entity_id"],
-  "room_humidity_priority": ["shared_label_with_climate", "same_area", "explicit_entity_id"],
+  "room_temperature_priority": [
+    "shared_label_with_climate",
+    "same_area",
+    "explicit_entity_id"
+  ],
+  "room_humidity_priority": [
+    "shared_label_with_climate",
+    "same_area",
+    "explicit_entity_id"
+  ],
   "primary_temperature_source": "external-room-sensor",
   "secondary_temperature_source": "indoor-unit-sensor",
   "flap_model": "single_motorized_outer_horizontal_louver_up_down",
-  "flap_ui_states": ["swing", "fixed"],
-  "initial_rooms": ["11.2 - Гостиная", "14 - Веранда"]
+  "flap_ui_states": [
+    "swing",
+    "fixed"
+  ],
+  "initial_rooms": [
+    "11.2 - Гостиная",
+    "14 - Веранда"
+  ],
+  "production_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
+  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-158.js"
 }

@@ -68,6 +68,11 @@ jobs:
           print(f"OK active entrypoint {entry}")
           PY
 
+      - name: Check deterministic production bundle
+        run: |
+          python scripts/build-frontend.py --check
+          python scripts/check-production-contract.py
+
       - name: Run frontend behavior tests
         run: |
           for test_file in tests/*.test.cjs; do

@@ -26,7 +26,7 @@ function load(file){
   vm.runInContext(`(()=>{${source}\n})();`,context,{filename:file});
 }
 
-load(path.join(root,'nikas-climate-entry-158.js'));
+load(path.join(root,'nikas-climate-production.js'));
 const Panel=classes.get('nikas-climate-panel');
 assert(Panel);
 

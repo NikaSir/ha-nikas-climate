@@ -61,7 +61,7 @@
 
 - Domain: `nikas_climate`
 - Integration: `NikaS Climate`
-- Version: `0.1.46`
+- Version: `0.1.47`
 - UI: `v1.4.18`
 - Route: `/dashboard-climate-v1/home`
 
