@@ -1,8 +1,8 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.48",
-  "ui_version": "1.4.19",
+  "integration_version": "0.1.49",
+  "ui_version": "1.4.20",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
   "safe_return_route": "/dashboard-house-v13/home",
@@ -102,7 +102,7 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.19",
+  "header_title_line_2": "UI v1.4.20",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
@@ -115,6 +115,11 @@
     "channel",
     "freshness"
   ],
+  "connection_transport_evidence": [
+    "entity_registry.platform=syncleo",
+    "entity_available=true"
+  ],
+  "connection_freshness_evidence": "not_exposed_by_syncleo_fail_closed_no_data",
   "connection_plaque_scope": "summary-only",
   "control_transport": "Syncleo local UDP",
   "wan_required": false,
