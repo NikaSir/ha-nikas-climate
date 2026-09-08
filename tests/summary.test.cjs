@@ -6,12 +6,12 @@ const root=path.resolve(__dirname,'../custom_components/nikas_climate/frontend')
 const classes=new Map();
 const context=vm.createContext({console,Map,Set,Date,Number,String,Boolean,Math,Promise,
   HTMLElement:class {attachShadow(){this.shadowRoot={};}},
-  localStorage:{getItem(){return null;}},
+  localStorage:{getItem(){return null;},setItem(){}},
   customElements:{get:name=>classes.get(name),define:(name,type)=>classes.set(name,type)},
 });
 const seen=new Set();
 function load(file){if(seen.has(file))return;seen.add(file);let source=fs.readFileSync(file,'utf8');source=source.replace(/^import "([^"?]+)(?:\?[^"\n]*)?";$/gm,(_,relative)=>{load(path.resolve(path.dirname(file),relative));return '';});vm.runInContext(`(()=>{${source}\n})();`,context,{filename:file});}
-load(path.join(root,'nikas-climate-entry-156.js'));
+load(path.join(root,'nikas-climate-entry-157.js'));
 const Panel=classes.get('nikas-climate-panel');const p=new Panel();
 p._entityRegistry=[];
 p._hass={states:{'climate.living':{entity_id:'climate.living',state:'off',attributes:{friendly_name:'Кондиционер в зале',temperature:null,current_temperature:null,fan_mode:'auto',swing_mode:'off'}}}};
