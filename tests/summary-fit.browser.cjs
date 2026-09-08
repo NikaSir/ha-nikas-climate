@@ -65,6 +65,7 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
      lampCSS:css(lamp,['width','height','borderRadius','boxShadow']),copyCSS:css(copy,['display','flexDirection','rowGap','textAlign']),mainCSS:css(main,typography),freshCSS:css(fresh,typography),
      headingCSS:css(heading,['paddingTop','paddingRight','minHeight']),heroZ:getComputedStyle(hero).zIndex,
      label:main.textContent,freshness:fresh.textContent,palette:{main:getComputedStyle(main).color,fresh:getComputedStyle(fresh).color,lamp:getComputedStyle(lamp).backgroundColor,background:getComputedStyle(plaque).backgroundColor,border:getComputedStyle(plaque).borderTopColor},
+     peerPalette:[...r.querySelectorAll('.peer[data-room]')].map(peer=>({room:peer.dataset.room,tone:peer.querySelector('.peer-lamp').className,lamp:getComputedStyle(peer.querySelector('.peer-lamp')).backgroundColor})),
      shellRects:['.app-header','.peer-selector','.bottom-nav'].map(s=>{const b=r.querySelector(s).getBoundingClientRect();return {left:b.left,top:b.top,width:b.width,height:b.height};}),
      textRects:[...rangeRects(main),...rangeRects(fresh)],titleRects:rangeRects(heading.querySelector('.u154-mode')),
      decorativeOnly:decoration.getAttribute('aria-hidden')==='true'&&!decoration.querySelector('button,a,[tabindex]'),
@@ -138,21 +139,49 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
    assert(await page.evaluate(()=>nodesStable()),`${name}: live nodes remounted`);const g=await measure(name);
    for(const key of ['left','top','right','width','height']){close(g.plaque[key],reference.plaque[key],`${name}: stable plaque ${key}`);close(g.circle[key],reference.circle[key],`${name}: stable circle ${key}`);}close(g.absoluteCard.top,reference.absoluteCard.top,`${name}: card origin`);return g;
   };
-  // All 15 combinations are layout-only fixtures, not new domain states.
+  const expectedPalettes=await page.evaluate(()=>{
+   const probe=document.createElement('span');probe.style.display='none';document.body.append(probe);
+   const palettes=Object.fromEntries([
+    ['local','var(--success-color)',11,30,'var(--success-color)'],
+    ['offline','var(--error-color)',10,30,'var(--error-color)'],
+    ['nodata','var(--secondary-text-color)',8,28,'var(--disabled-text-color)'],
+   ].map(([tone,surface,fill,border,foreground])=>{
+    probe.style.backgroundColor=`color-mix(in srgb,${surface} ${fill}%,var(--card-background-color))`;
+    probe.style.borderTopColor=`color-mix(in srgb,${surface} ${border}%,var(--divider-color))`;
+    probe.style.color=foreground;const css=getComputedStyle(probe);
+    return [tone,{main:css.color,fresh:'rgb(102, 102, 102)',lamp:css.color,background:css.backgroundColor,border:css.borderTopColor}];
+   }));probe.remove();return palettes;
+  });
+  const assertChannelPalette=(g,tone,name)=>{
+   assert.deepEqual(g.palette,expectedPalettes[tone],`${name}: channel palette independent of freshness`);
+   const peer=g.peerPalette.find(peer=>peer.room==='living');
+   assert(peer.tone.split(/\s+/).includes(({local:'ok',offline:'bad',nodata:'nodata'})[tone]),`${name}: peer channel tone`);
+   assert.equal(peer.lamp,expectedPalettes[tone].lamp,`${name}: peer/plaque channel lamps agree`);
+  };
+  // All 20 combinations are layout-only fixtures, not new domain states.
   for(const [label,tone]of [['Локально','local'],['Облако','cloud'],['Резерв','reserve'],['Нет связи','offline'],['Нет данных','nodata']]){
-   for(const [fresh,modifier]of [['Данные актуальны','freshness-current'],['Данные устарели','freshness-stale'],['Нет данных','freshness-none']]){
-    await page.evaluate(c=>{fixtureConnection=c;p.patch();},{label,tone:`${tone} ${modifier}`,fresh});await settle();await unchanged(`layout-only-${label}-${fresh}`);
+   for(const [fresh,modifier]of [['Данные актуальны','freshness-current'],['Данные устарели','freshness-stale'],['Нет данных','freshness-none'],['Получено в HA','freshness-unknown']]){
+    await page.evaluate(c=>{fixtureConnection=c;p.patch();},{label,tone:`${tone} ${modifier}`,fresh});await settle();const g=await unchanged(`layout-only-${label}-${fresh}`);
+    if(label==='Локально'&&fresh==='Получено в HA')assertChannelPalette(g,'local','received-in-HA fixture');
    }
   }
   await page.evaluate(()=>{fixtureConnection=null;p.patch();});await settle();
-  for(const state of ['cool','heat','unavailable','unknown','off','fan_only','dry','auto']){
+  for(const state of ['off','cool','heat','unavailable','off','unknown','cool','fan_only','dry','auto']){
    await page.evaluate(s=>{states['climate.living'].state=s;p.hass=makeHass();},state);await settle();const g=await unchanged(`actual-state-${state}`);
-   assert(['Локально','Облако','Резерв','Нет связи','Нет данных'].includes(g.label),'canonical transport vocabulary');
-   assert(['Данные актуальны','Данные устарели','Нет данных'].includes(g.freshness),'canonical freshness vocabulary');
-   assert.notEqual(g.palette.main,'rgb(67, 160, 71)','fixtures have no trusted device sample: no false green');
-   assert.notEqual(g.palette.lamp,'rgb(67, 160, 71)','fixtures have no trusted device sample: no green lamp');
-   assert.equal(g.palette.fresh,g.freshness==='Данные устарели'?'rgb(246, 166, 35)':'rgb(102, 102, 102)','freshness line palette');
+   const tone=state==='unavailable'?'offline':state==='unknown'?'nodata':'local';
+   assert.equal(g.label,({local:'Локально',offline:'Нет связи',nodata:'Нет данных'})[tone],'channel label');
+   assert.equal(g.freshness,tone==='local'?'Получено в HA':'Нет данных','no confirmed device sample claimed');
+   assertChannelPalette(g,tone,`actual-state-${state}`);
   }
+  for(const platform of ['other',null,'syncleo']){
+   await page.evaluate(platform=>{p._entityRegistry.find(entry=>entry.entity_id==='climate.living').platform=platform;p.hass=makeHass();},platform);await settle();const g=await unchanged(`actual-platform-${platform}`);
+   assert.equal(g.label,platform==='syncleo'?'Локально':'Нет данных');
+   assert.equal(g.freshness,platform==='syncleo'?'Получено в HA':'Нет данных');
+   assertChannelPalette(g,platform==='syncleo'?'local':'nodata',`actual-platform-${platform}`);
+  }
+  await page.evaluate(()=>{window.savedClimate=states['climate.living'];delete states['climate.living'];p.hass=makeHass();});await settle();const missing=await unchanged('actual-missing-entity');
+  assert.equal(missing.label,'Нет данных');assert.equal(missing.freshness,'Нет данных');assertChannelPalette(missing,'nodata','actual-missing-entity');
+  await page.evaluate(()=>{states['climate.living']=savedClimate;p.hass=makeHass();});await settle();assertChannelPalette(await unchanged('actual-entity-restored'),'local','actual-entity-restored');
   for(const title of ['Выкл.','Охлаждение','Ожидание завершения длительного цикла самоочистки внутреннего блока']){await page.evaluate(t=>p.shadowRoot.querySelector('.u154-mode strong').textContent=t,title);await settle();await unchanged(`adjacent-title-${title}`);}
   await page.evaluate(()=>{const img=p.shadowRoot.querySelector('.u154-photo-wrap img');window.imageSrc=img.src;img.src='/deliberately-missing-image.png';});await settle();await unchanged('image-not-loaded');
   await page.evaluate(()=>{p.shadowRoot.querySelector('.u154-photo-wrap img').src=imageSrc;p.patch();});await settle();

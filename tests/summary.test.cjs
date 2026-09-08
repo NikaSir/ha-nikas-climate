@@ -20,9 +20,9 @@ assert.equal(m.target,null);assert.equal(m.indoor,null);
 assert.equal(p.connection(m).label,'Нет данных','an unverified integration must not be called local');
 p._entityRegistry=[{entity_id:'climate.living',platform:'syncleo'}];
 assert.equal(p.connection(m).label,'Локально','available Syncleo identifies the local UDP path even when OFF');
-assert.equal(p.connection(m).fresh,'Нет данных','default values provide no evidence of telemetry freshness');
+assert.equal(p.connection(m).fresh,'Получено в HA','HA state is available without claiming received device telemetry');
 assert.match(p.connection(m).tone,/freshness-unknown/);
-assert.equal(p.peerConnectionTone160(m),'nodata','the peer lamp must not present untrusted freshness as healthy');
+assert.equal(p.peerConnectionTone160(m),'ok','the peer lamp reports the available local channel, not telemetry freshness');
 let html=p.summary(m);assert.match(html,/hero-off-v2.png/);assert.match(html,/Выключен/);assert.doesNotMatch(html,/Данные актуальны/);
 assert.match(html,/Ночной<\/span><strong>—/);
 assert.match(html,/Турбо<\/span><strong>—/);
@@ -36,19 +36,26 @@ function updateClimate(changes) {
   p._hass.states['climate.living']={...p._hass.states['climate.living'],...changes};
   return p.roomModel({key:'living'});
 }
-function assertUntrusted(model,label) {
+function assertChannelState(model,label) {
   const connection=p.connection(model);
   assert.equal(connection.label,label);
-  assert.equal(connection.fresh,'Нет данных','HA state alone must not invent current or previously accepted telemetry');
-  assert.equal(p.peerConnectionTone160(model),label==='Нет связи'?'bad':'nodata');
+  assert.equal(connection.fresh,label==='Локально'?'Получено в HA':'Нет данных','HA state alone must not invent current or previously accepted device telemetry');
+  assert.equal(connection.tone,label==='Локально'?'local freshness-unknown':label==='Нет связи'?'offline freshness-none':'nodata');
+  assert.equal(p.peerConnectionTone160(model),label==='Локально'?'ok':label==='Нет связи'?'bad':'nodata');
   assert.doesNotMatch(connection.tone,/freshness-confirmed|freshness-pending|freshness-stale/);
+  const summary=p.summary(model);
+  const visibleConnection=/<span class="connection-copy"><strong>([^<]*)<\/strong><small>([^<]*)<\/small>/.exec(summary);
+  assert(visibleConnection,'the plaque exposes both visible state lines');
+  assert.deepEqual(visibleConnection.slice(1),[connection.label,connection.fresh]);
+  assert.doesNotMatch(visibleConnection.slice(1).join(' '),/Состояние получено|Ожидание данных|Данные актуальны|Данные устарели/);
+  if(label==='Локально')assert.match(summary,/aria-label="[^"]*Свежесть ответа кондиционера не подтверждена\./,'accessible label preserves the unconfirmed device freshness');
 }
 
-assertUntrusted({...m,climate:null,available:false},'Нет данных');
+assertChannelState({...m,climate:null,available:false},'Нет данных');
 for(const platform of [undefined,null,'unknown','unavailable','other']) {
   p._entityRegistry=[{entity_id:'climate.living',platform}];
-  assertUntrusted(m,'Нет данных');
-  assertUntrusted({...m,climate:{...m.climate,state:'unavailable'},available:false},'Нет данных');
+  assertChannelState(m,'Нет данных');
+  assertChannelState({...m,climate:{...m.climate,state:'unavailable'},available:false},'Нет данных');
 }
 p._entityRegistry=[{entity_id:'climate.living',platform:'syncleo'}];
 
@@ -60,32 +67,39 @@ for(const attributes of [
   {temperature:24,current_temperature:null,fan_mode:'auto'},
 ]) {
   m=updateClimate({state:'off',attributes:{friendly_name:'Кондиционер в зале',swing_mode:'off',...attributes}});
-  assertUntrusted(m,'Локально');
+  assertChannelState(m,'Локально');
   for(const timestamp of ['2020-01-01T00:00:00Z',new Date().toISOString()]) {
     m=updateClimate({last_changed:timestamp,last_updated:timestamp,last_reported:timestamp});
-    assertUntrusted(m,'Локально');
+    assertChannelState(m,'Локально');
   }
+}
+
+// Recent independent room sensors do not prove an accepted conditioner sample.
+for(const state of ['24.9','unavailable','unknown']) {
+  p._hass.states['sensor.sensor_th_zb_11_temperature']={entity_id:'sensor.sensor_th_zb_11_temperature',state,last_updated:new Date().toISOString(),attributes:{device_class:'temperature'}};
+  assertChannelState(p.roomModel({key:'living'}),'Локально');
 }
 
 // Unknown is missing knowledge, whereas Syncleo's explicit unavailable state
 // is evidence of a lost transport. Preserved attributes do not prove a sample.
 m=updateClimate({state:'unknown'});
-assertUntrusted(m,'Нет данных');
+assertChannelState(m,'Нет данных');
 for(const state of ['',null,undefined,'not-a-climate-mode']) {
   m=updateClimate({state});
-  assertUntrusted(m,'Нет данных');
+  assertChannelState(m,'Нет данных');
 }
 m=updateClimate({state:'unavailable'});
-assertUntrusted(m,'Нет связи');
+assertChannelState(m,'Нет связи');
 assert.match(p.summary(m),/Нет связи/);
-for(const state of ['off','cool','heat']) {
+for(const state of ['off','cool','heat','heat_cool','auto','dry','fan_only']) {
   m=updateClimate({state});
-  assertUntrusted(m,'Локально');
+  assertChannelState(m,'Локально');
 }
-assert.doesNotMatch(p.summary(m),/Состояние получено|Ожидание данных|Данные актуальны|Данные устарели/);
 // Returning to OFF after an outage must not carry fabricated stale/fresh memory.
-m=updateClimate({state:'unavailable'});assertUntrusted(m,'Нет связи');
-m=updateClimate({state:'off'});assertUntrusted(m,'Локально');
+for(const state of ['off','unavailable','cool','unknown','off']) {
+  m=updateClimate({state});
+  assertChannelState(m,state==='unavailable'?'Нет связи':state==='unknown'?'Нет данных':'Локально');
+}
 assert.equal(p.isHumidityEntity({entity_id:'sensor.battery',attributes:{device_class:'battery',unit_of_measurement:'%'}}),false);
 assert.equal(p.isHumidityEntity({entity_id:'sensor.humidity',attributes:{device_class:'humidity',unit_of_measurement:'%'}}),true);
 assert.match(p.statistics(m),/data-history-chart="temperature"/);

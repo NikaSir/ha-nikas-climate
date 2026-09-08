@@ -1,8 +1,8 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.54",
-  "ui_version": "1.4.25",
+  "integration_version": "0.1.55",
+  "ui_version": "1.4.26",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
   "safe_return_route": "/dashboard-house-v13/home",
@@ -111,15 +111,15 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.25",
+  "header_title_line_2": "UI v1.4.26",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
   "peer_device_status_lamps": true,
-  "peer_device_status_lamp_source": "connection_channel_and_freshness",
+  "peer_device_status_lamp_source": "syncleo_channel_availability",
   "peer_device_status_lamp_colors": {
-    "confirmed_channel_and_freshness": "success",
-    "unknown_freshness_or_source": "neutral",
+    "available_syncleo_channel_including_off": "success",
+    "unknown_availability_or_source": "neutral",
     "explicit_unavailable_syncleo": "error"
   },
   "peer_device_mode_icons": true,
@@ -133,8 +133,16 @@
   "connection_plaque_radius_px": 18,
   "connection_levels": [
     "channel",
-    "freshness"
+    "ha_state_receipt"
   ],
+  "connection_status_user_override": {
+    "decision_date": "2026-09-08",
+    "reason": "Restore the previously working channel-availability indication at the user's explicit request; freshness must not force the available channel grey.",
+    "available_secondary_label": "Получено в HA",
+    "green_means": "syncleo_reports_channel_available",
+    "green_does_not_mean": "confirmed_fresh_device_sample",
+    "geometry_unchanged": true
+  },
   "connection_transport_evidence": [
     "entity_registry.platform=syncleo",
     "entity_available=true"

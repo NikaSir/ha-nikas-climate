@@ -104,8 +104,8 @@ if (Panel && !Panel.prototype.__nikasUi144Patched) {
     return `<section class="card u144-diag"><div class="page-head"><div class="section-title">Диагностика</div><div class="area">${esc(m?.room?.title)}</div></div>
       ${row("Состояние устройства",esc(h.label))}
       ${row("Канал",esc(this.connection(m).label))}
-      ${row("Актуальность показаний",esc(this.connection(m).fresh))}
-      <p class="notice">«Нет данных» во второй строке плашки означает отсутствие подтверждения актуальности. Syncleo не передаёт признак принятого ответа прибора; сохранённые показания и успешное обновление HA его не заменяют.</p>
+      ${row("Актуальность показаний",this.connection(m).tone.includes("freshness-unknown")?"Не подтверждена":esc(this.connection(m).fresh))}
+      <p class="notice">Цвет плашки показывает доступность канала по данным Syncleo. «Получено в HA» означает наличие состояния в Home Assistant, а не подтверждённый свежий ответ кондиционера. Сохранённые показания и успешное обновление HA не доказывают актуальность ответа прибора.</p>
       ${row("WAN","Не требуется")}
       ${row("Climate entity",esc(climate?.entity_id || "не найден"))}
       ${row("Config entry",esc(climateReg?.config_entry_id || "—"))}
