@@ -1,8 +1,8 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.53",
-  "ui_version": "1.4.24",
+  "integration_version": "0.1.54",
+  "ui_version": "1.4.25",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
   "safe_return_route": "/dashboard-house-v13/home",
@@ -111,36 +111,35 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.24",
+  "header_title_line_2": "UI v1.4.25",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
   "peer_device_status_lamps": true,
-  "peer_device_status_lamp_source": "connection_channel_and_snapshot_evidence",
+  "peer_device_status_lamp_source": "connection_channel_and_freshness",
   "peer_device_status_lamp_colors": {
-    "confirmed_channel_and_snapshot": "success",
-    "channel_without_snapshot_or_unknown_source": "neutral",
-    "unavailable": "error"
+    "confirmed_channel_and_freshness": "success",
+    "unknown_freshness_or_source": "neutral",
+    "explicit_unavailable_syncleo": "error"
   },
   "peer_device_mode_icons": true,
   "peer_mode_icon_source": "actual_hvac_mode",
   "connection_plaque_reference": "NikaS Standard 2.2 canonical connection plaque",
   "connection_plaque_mutation_allowed": false,
-  "connection_plaque_mobile_width_px": 168,
-  "connection_plaque_compact_width_px": 160,
-  "connection_plaque_compact_max_viewport_px": 340,
-  "connection_plaque_min_height_px": 58,
-  "connection_plaque_padding_px": [12, 14],
+  "connection_plaque_padding_px": [
+    12,
+    14
+  ],
   "connection_plaque_radius_px": 18,
   "connection_levels": [
     "channel",
-    "snapshot_evidence"
+    "freshness"
   ],
   "connection_transport_evidence": [
     "entity_registry.platform=syncleo",
     "entity_available=true"
   ],
-  "connection_freshness_evidence": "syncleo_snapshot_presence_without_age_claim",
+  "connection_freshness_evidence": "not_exposed_by_current_syncleo",
   "connection_plaque_scope": "summary-only",
   "control_transport": "Syncleo local UDP",
   "wan_required": false,
@@ -167,5 +166,32 @@
     "14 - Веранда"
   ],
   "production_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
-  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-161.js"
+  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-161.js",
+  "connection_plaque_width_px": 200,
+  "connection_plaque_height_px": 60,
+  "connection_plaque_top_px": 16,
+  "connection_plaque_right_px": 16,
+  "connection_freshness_status": "not_verified",
+  "connection_decoration_contract": {
+    "version": "1.0",
+    "source": "https://github.com/NikaSir/ha-contract-generated-ui/blob/d0f0916abca03749df41e4a687da2e00daef66a1/docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md",
+    "sha256": "7a6c24a3488a37626cca4d6f844d1f9080c8f572e1e7e23ce6a89a466cdabae8",
+    "production_browser_acceptance_required": true
+  },
+  "blue_corner_reference": {
+    "width_px": 205,
+    "height_px": 205,
+    "top_px": -92,
+    "right_px": -70,
+    "base_color": "#03A9D9",
+    "background": "rgba(3,169,217,0.07)",
+    "opacity": 1,
+    "radius": "50%",
+    "coordinate_origin": "card_inner_border_edge",
+    "clip": "persistent_card_decoration_layer",
+    "theme_primary_dependent": false,
+    "geometry_overrides_allowed": false,
+    "pointer_events": "none",
+    "aria_hidden": true
+  }
 }

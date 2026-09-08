@@ -359,7 +359,7 @@ class NikasClimatePanel extends HTMLElement {
         .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}.content{width:100%;max-width:1280px;margin:0 auto;padding:12px}
         .card{background:var(--card-background-color);border:1px solid color-mix(in srgb,var(--divider-color) 72%,transparent);border-radius:22px;padding:15px;box-shadow:0 6px 18px rgba(0,0,0,.04);margin-bottom:12px}.hero{background:linear-gradient(135deg,var(--card-background-color) 62%,color-mix(in srgb,var(--primary-color) 6%,var(--card-background-color)) 100%)}
         .hero-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(168px,42%);gap:12px;align-items:start}.page-head{margin-bottom:2px}.room-title{font-size:25px;font-weight:800;line-height:1.04;letter-spacing:-.03em}.area{margin-top:5px;color:var(--secondary-text-color);font-size:13px;font-weight:600}
-        .connection-indicator{display:grid;grid-template-columns:10px minmax(0,1fr);align-items:center;column-gap:9px;min-height:58px;padding:12px;border-radius:18px;border:1px solid color-mix(in srgb,var(--divider-color) 72%,transparent);box-shadow:0 4px 14px rgba(0,0,0,.055);white-space:nowrap}.connection-lamp{width:10px;height:10px;border-radius:50%}.connection-copy{display:grid;row-gap:4px}.connection-copy strong{font-size:16px}.connection-copy small{font-size:13px;font-weight:600;color:var(--secondary-text-color)}.connection-indicator.local{background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color));border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))}.connection-indicator.local .connection-lamp{background:var(--success-color,#43a047)}.connection-indicator.local strong{color:var(--success-color,#43a047)}.connection-indicator.local.freshness-unknown,.connection-indicator.nodata{background:color-mix(in srgb,var(--secondary-text-color) 8%,var(--card-background-color));border-color:color-mix(in srgb,var(--secondary-text-color) 28%,var(--divider-color))}.connection-indicator.nodata .connection-lamp{background:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.nodata strong{color:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.offline{background:color-mix(in srgb,var(--error-color,#db4437) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--error-color,#db4437) 30%,var(--divider-color))}.connection-indicator.offline .connection-lamp{background:var(--error-color,#db4437)}.connection-indicator.offline strong{color:var(--error-color,#db4437)}
+        .connection-indicator{position:absolute;top:16px;right:16px;z-index:2;box-sizing:border-box;width:200px;min-width:200px;max-width:200px;height:60px;min-height:60px;max-height:60px;margin:0;padding:12px 14px;border:1px solid var(--divider-color);border-radius:18px;display:grid;grid-template-columns:10px minmax(0,1fr);column-gap:11px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.055);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-style:normal;letter-spacing:0;text-transform:none;text-align:left;white-space:nowrap;transition:none;animation:none}.connection-lamp{display:block;width:10px;height:10px;min-width:10px;min-height:10px;margin:0;padding:0;border:0;border-radius:50%;flex-shrink:0;box-shadow:none}.connection-copy{display:flex;flex-direction:column;gap:3px;min-width:0;margin:0;padding:0;text-align:left;white-space:nowrap}.connection-copy strong,.connection-copy small{margin:0;padding:0;letter-spacing:0;font-style:normal;text-transform:none;white-space:nowrap;overflow:visible;text-overflow:clip}.connection-copy strong{font:700 16px/17px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}.connection-copy small{font:600 13px/14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--secondary-text-color)}.connection-indicator.local{background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color));border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))}.connection-indicator.local .connection-lamp{background:var(--success-color,#43a047)}.connection-indicator.local strong{color:var(--success-color,#43a047)}.connection-indicator.local.freshness-unknown,.connection-indicator.nodata{background:color-mix(in srgb,var(--secondary-text-color) 8%,var(--card-background-color));border-color:color-mix(in srgb,var(--secondary-text-color) 28%,var(--divider-color))}.connection-indicator.nodata .connection-lamp{background:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.nodata strong{color:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.offline{background:color-mix(in srgb,var(--error-color,#db4437) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--error-color,#db4437) 30%,var(--divider-color))}.connection-indicator.offline .connection-lamp{background:var(--error-color,#db4437)}.connection-indicator.offline strong{color:var(--error-color,#db4437)}
         .climate-core{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:10px;margin-top:14px}.primary-temp{min-height:174px;padding:16px;border-radius:22px;background:color-mix(in srgb,var(--primary-color) 5%,var(--card-background-color));border:1px solid color-mix(in srgb,var(--primary-color) 14%,var(--divider-color));display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary-text-color)}.temp-main{margin-top:4px;font-size:58px;font-weight:800;line-height:1;letter-spacing:-.05em}.temp-sub{margin-top:8px;color:var(--secondary-text-color);font-size:13px}.metric-stack{display:grid;grid-template-rows:1fr 1fr;gap:10px}.metric{padding:13px;border-radius:19px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);display:flex;flex-direction:column;justify-content:center}.metric span{font-size:12px;font-weight:700;color:var(--secondary-text-color)}.metric strong{margin-top:5px;font-size:24px}.metric small{margin-top:5px;font-size:12px;color:var(--secondary-text-color)}
         .report-title{margin-top:14px;font-size:13px;font-weight:800;color:var(--secondary-text-color);letter-spacing:.07em;text-transform:uppercase}.status-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}.status-item{min-height:88px;padding:9px 7px;border-radius:18px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}.status-item ha-icon{--mdc-icon-size:23px;color:var(--primary-color);margin-bottom:5px}.status-item span{font-size:11.5px;color:var(--secondary-text-color);font-weight:700}.status-item strong{margin-top:4px;font-size:14px;line-height:1.1}.status-item.active strong,.status-item.active ha-icon{color:var(--success-color,#43a047)}
         .chart-card{margin-top:12px;padding:12px;border-radius:19px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);background:var(--card-background-color)}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.chart-head strong{font-size:13px}.chart-head small{font-size:11px;color:var(--secondary-text-color)}.chart-wrap{height:132px;margin-top:8px}.chart-wrap svg{width:100%;height:100%;overflow:visible}.chart-grid{stroke:color-mix(in srgb,var(--divider-color) 70%,transparent);stroke-width:1}.chart-room{fill:none;stroke:var(--primary-color);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.chart-target{fill:none;stroke:var(--success-color,#43a047);stroke-width:2;stroke-dasharray:5 5;stroke-linecap:round}.chart-empty{height:112px;display:grid;place-items:center;color:var(--secondary-text-color);font-size:12px}.chart-legend{display:flex;gap:14px;margin-top:5px;font-size:11px;color:var(--secondary-text-color)}.chart-legend span{display:inline-flex;align-items:center;gap:5px}.chart-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-color)}.chart-dot.target{background:var(--success-color,#43a047)}
@@ -407,14 +407,21 @@ class NikasClimatePanel extends HTMLElement {
     const content = this.shadowRoot.getElementById("content");
     const viewKey = `${selected.room.key}:${this._tab}`;
     const markup = this._tab === "summary" ? this.summary(selected) : this._tab === "control" ? this.control(selected) : this._tab === "statistics" ? this.statistics(selected) : this.diagnostics(selected);
-    this.__patchMarkup(content, markup, this.__contentView === viewKey);
+    // Summary has the same structure for every peer. Keep its plaque/decor
+    // mounted when switching devices; control/history routes retain isolation.
+    const sameSummary = this._tab === "summary" && this.__contentView?.endsWith(":summary");
+    this.__patchMarkup(content, markup, this.__contentView === viewKey || sameSummary);
     this.__contentView = viewKey;
     this.bindControls(selected);
     if (this._tab === "summary") this.ensureHistory(selected);
   }
 
   connectionPlaque(m) {
-    const c=this.connection(m); return `<div class="connection-indicator ${c.tone}" role="status"><i class="connection-lamp"></i><span class="connection-copy"><strong>${c.label}</strong><small>${c.fresh}</small></span></div>`;
+    const c=this.connection(m);
+    const detail=c.tone.includes("freshness-unknown")
+      ? "Локальный канал доступен. Syncleo не предоставляет подтверждение актуальности показаний."
+      : `Канал: ${c.label}. Актуальность: ${c.fresh}.`;
+    return `<div class="connection-indicator ${c.tone}" role="status" aria-label="${detail}" title="${detail}"><i class="connection-lamp" aria-hidden="true"></i><span class="connection-copy"><strong>${c.label}</strong><small>${c.fresh}</small></span></div>`;
   }
 
   summary(m) {
@@ -2684,7 +2691,9 @@ if (Panel && !Panel.prototype.__nikasUi144Patched) {
     const row = (name,value) => `<div class="row"><span>${name}</span><strong>${value}</strong></div>`;
     return `<section class="card u144-diag"><div class="page-head"><div class="section-title">Диагностика</div><div class="area">${esc(m?.room?.title)}</div></div>
       ${row("Состояние устройства",esc(h.label))}
-      ${row("Канал","Syncleo UDP / LAN")}
+      ${row("Канал",esc(this.connection(m).label))}
+      ${row("Актуальность показаний",esc(this.connection(m).fresh))}
+      <p class="notice">«Нет данных» во второй строке плашки означает отсутствие подтверждения актуальности. Syncleo не передаёт признак принятого ответа прибора; сохранённые показания и успешное обновление HA его не заменяют.</p>
       ${row("WAN","Не требуется")}
       ${row("Climate entity",esc(climate?.entity_id || "не найден"))}
       ${row("Config entry",esc(climateReg?.config_entry_id || "—"))}
@@ -3851,11 +3860,11 @@ if (Panel && !Panel.prototype.__nikasUi154Patched) {
 
     return `<div class="u154-summary-wrap mode-${modeKey}">
       <section class="card u154-summary">
+        <div class="u154-decoration" aria-hidden="true"><div class="u154-corner"></div></div>
+        ${this.connectionPlaque(m)}
         <div class="u154-hero">
-          <div class="u154-corner" aria-hidden="true"></div>
           <div class="u154-head">
             <div class="u154-mode"><ha-icon icon="${mode[1]}"></ha-icon><div><strong>${esc154(mode[0])}</strong>${submode?`<span>${esc154(submode)}</span>`:""}</div></div>
-            <div class="u154-connection">${this.connectionPlaque(m)}</div>
           </div>
           <div class="u154-photo-wrap"><img class="u154-photo" src="${image}" alt="Ballu Lagoon" loading="eager" decoding="sync" fetchpriority="high"/></div>
         </div>
@@ -3889,28 +3898,29 @@ if (Panel && !Panel.prototype.__nikasUi154Patched) {
       .statistics-periods{display:flex;gap:8px;margin:16px 0}.statistics-periods button{border:1px solid var(--divider-color);border-radius:14px;padding:12px 18px;background:var(--card-background-color);color:var(--primary-text-color)}.statistics-periods button[aria-pressed="true"]{color:var(--primary-color);border-color:var(--primary-color)}[data-history-chart]{display:block;margin-bottom:14px;min-height:80px}
       .u154-summary-wrap{--mode-accent:var(--primary-text-color);display:flex;flex-direction:column;gap:16px;min-height:100%}
       .u154-summary-wrap.mode-cool{--mode-accent:#079ed0}.u154-summary-wrap.mode-heat{--mode-accent:#d47b2d}.u154-summary-wrap.mode-auto{--mode-accent:#43a85b}.u154-summary-wrap.mode-dry{--mode-accent:#18a6b6}.u154-summary-wrap.mode-fan_only{--mode-accent:#607d8b}
-      .u154-summary{height:auto!important;min-height:0!important;overflow:hidden;display:flex;flex-direction:column;gap:10px!important;padding:14px!important;margin:0!important;border-radius:24px}
-      .u154-hero{position:relative;overflow:hidden;border-radius:22px;background:var(--card-background-color);padding:10px 10px 12px}
-      .u154-corner{position:absolute;width:220px;height:220px;right:-78px;top:-102px;border-radius:50%;background:color-mix(in srgb,var(--primary-color) 7%,transparent);pointer-events:none;z-index:0}
-      .u154-head{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) minmax(142px,34%);gap:18px;align-items:start;min-height:102px;padding:8px 4px 12px}
-      .u154-mode{display:flex;gap:12px;align-items:flex-start;min-width:0;padding-top:9px}.u154-mode ha-icon{--mdc-icon-size:38px;color:var(--mode-accent)}.u154-mode>div{min-width:0;display:flex;flex-direction:column}.u154-mode strong{font-size:34px;line-height:1;font-weight:800;color:var(--mode-accent);white-space:nowrap}.u154-mode span{font-size:18px;line-height:1.08;font-weight:700;margin-top:7px;color:var(--primary-text-color)}
-      .u154-connection{justify-self:stretch;align-self:start;min-width:0}.u154-connection .connection-indicator{margin:0!important;width:100%!important;box-sizing:border-box}
-      .u154-photo-wrap{position:relative;z-index:1;width:100%;height:clamp(150px,calc(100dvh - 625px),286px);border-radius:22px;overflow:hidden;background:linear-gradient(180deg,#f8fafb,#eef4f6)}.u154-photo{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+      /* NikaS 2.2 connection/decor contract v1.0: one card coordinate system. */
+      .u154-summary{position:relative;isolation:isolate;box-sizing:border-box;border:1px solid var(--divider-color);padding:16px!important;container:nikas-card / inline-size;height:auto!important;min-height:0!important;overflow:visible;display:flex;flex-direction:column;gap:10px!important;margin:0!important;border-radius:24px}
+      .u154-decoration{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:0;pointer-events:none}
+      .u154-corner{position:absolute;width:205px;height:205px;right:-70px;top:-92px;border:0;border-radius:50%;background:rgba(3,169,217,0.07);opacity:1;box-shadow:none;filter:none;transform:none;animation:none;pointer-events:none}
+      .u154-hero,.u154-metrics,.u154-band{position:relative;z-index:1;min-width:0}
+      .u154-head{box-sizing:border-box;min-height:60px;padding:0 212px 0 0}
+      .u154-mode{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}.u154-mode ha-icon{--mdc-icon-size:38px;color:var(--mode-accent);flex-shrink:0}.u154-mode>div{min-width:0;max-width:100%;display:flex;flex-direction:column}.u154-mode strong{font-size:34px;line-height:1;font-weight:800;color:var(--mode-accent);white-space:normal;overflow-wrap:anywhere;word-break:normal}.u154-mode span{font-size:18px;line-height:1.08;font-weight:700;margin-top:7px;color:var(--primary-text-color)}
+      @container nikas-card (width < 326px){.u154-head{padding-right:0;padding-top:72px}}
+      .u154-photo-wrap{position:relative;z-index:1;margin-top:12px;width:100%;height:clamp(150px,calc(100dvh - 625px),286px);border-radius:22px;overflow:hidden;background:linear-gradient(180deg,#f8fafb,#eef4f6)}.u154-photo{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
       .u154-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--divider-color);border-radius:22px;background:var(--card-background-color);overflow:hidden}.u154-metric{min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:14px 8px;position:relative}.u154-metric+.u154-metric:before{content:"";position:absolute;left:0;top:13px;bottom:13px;width:1px;background:var(--divider-color)}.u154-metric ha-icon{flex:0 0 auto;color:var(--primary-color);--mdc-icon-size:24px}.u154-metric>div{min-width:0;display:flex;flex-direction:column}.u154-metric span{font-size:12px;line-height:1.08;color:var(--secondary-text-color)}.u154-metric strong{font-size:28px;line-height:1;font-weight:800;margin-top:6px;white-space:nowrap}
       .u154-band{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--divider-color);border-radius:22px;background:var(--card-background-color);overflow:hidden;min-height:88px}.u154-status{min-width:0;display:flex;align-items:center;gap:11px;padding:15px 14px;position:relative}.u154-status+.u154-status:before{content:"";position:absolute;left:0;top:13px;bottom:13px;width:1px;background:var(--divider-color)}.u154-status ha-icon{flex:0 0 auto;--mdc-icon-size:31px;color:var(--primary-text-color)}.u154-status>div{min-width:0;display:flex;flex-direction:column}.u154-status span{font-size:12px;color:var(--secondary-text-color);line-height:1.05}.u154-status strong{font-size:19px;line-height:1.08;font-weight:800;margin-top:5px;white-space:normal}.u154-status.active ha-icon,.u154-status.active strong{color:var(--primary-color)}.u154-metrics + .u154-band .u154-status:first-child.active ha-icon,.u154-metrics + .u154-band .u154-status:first-child.active strong{color:var(--mode-accent)}
       .u154-band-secondary{min-height:84px}
       .u154-note{display:flex;align-items:center;gap:12px;margin:0 14px 24px;border:1px solid var(--divider-color);border-radius:18px;background:rgba(0,169,214,.08);padding:12px 14px;color:var(--secondary-text-color);font-size:11px;line-height:1.3}.u154-note ha-icon{--mdc-icon-size:26px;color:var(--primary-color);flex:0 0 auto}
       @media(max-width:520px){
-        .header-title strong{font-size:clamp(15px,4.3vw,22px)!important}.u154-summary-wrap{gap:14px;min-height:calc(100dvh - 208px)}.u154-summary{gap:9px!important;padding:11px 12px 13px!important}.u154-hero{padding:9px 9px 10px}.u154-corner{width:188px;height:188px;right:-66px;top:-90px}
-        .u154-head{grid-template-columns:minmax(0,1fr) minmax(154px,35%);gap:12px;min-height:92px;padding:6px 2px 11px}.u154-mode{padding-top:0;gap:6px;flex-direction:column}.u154-mode ha-icon{--mdc-icon-size:24px;flex:0 0 24px}.u154-mode strong{white-space:normal;overflow-wrap:anywhere;font-size:clamp(16px,4.5vw,23px)}.u154-mode span{font-size:16px}
-        .u154-connection .connection-indicator{min-height:64px!important}
+        .header-title strong{font-size:clamp(15px,4.3vw,22px)!important}.u154-summary-wrap{gap:14px;min-height:calc(100dvh - 208px)}.u154-summary{gap:9px!important}
+        .u154-mode{padding-top:0;gap:6px;flex-direction:column}.u154-mode ha-icon{--mdc-icon-size:24px;flex:0 0 24px}.u154-mode strong{white-space:normal;overflow-wrap:anywhere;font-size:clamp(16px,4.5vw,23px)}.u154-mode span{font-size:16px}
         .u154-photo-wrap{height:clamp(64px,calc(100dvh - 625px),252px);border-radius:20px}
         .u154-metric{padding:12px 3px;gap:5px;flex-direction:column;text-align:center}.u154-metric ha-icon{--mdc-icon-size:21px}.u154-metric span{font-size:10px}.u154-metric strong{font-size:24px;margin-top:5px}
         .u154-band{min-height:80px}.u154-status{padding:10px 5px;gap:5px;flex-direction:column;text-align:center}.u154-status ha-icon{--mdc-icon-size:26px}.u154-status span{font-size:10px}.u154-status strong{font-size:16px}.u154-band-secondary{min-height:78px}
         .u154-note{font-size:10px;margin:0 12px 24px;padding:10px 12px}
       }
       @media(max-width:520px) and (max-height:720px){
-        .u154-head{min-height:78px}.u154-summary{gap:7px!important}
+        .u154-summary{gap:7px!important}
         .u154-metric{padding:7px 3px}.u154-metric strong{font-size:21px}
         .u154-band,.u154-band-secondary{min-height:64px}.u154-status{padding:7px 4px;gap:3px}
         .u154-status ha-icon{--mdc-icon-size:21px}.u154-status strong{font-size:14px;margin-top:3px}
@@ -4511,7 +4521,6 @@ if (Panel && !Panel.prototype.__ui158) {
       style.textContent = `
         .viewport{scroll-padding-bottom:34px}
         .viewport[data-short-summary="1"] .u154-summary{gap:5px!important}
-        .viewport[data-short-summary="1"] .u154-head{min-height:68px;padding-top:0;padding-bottom:4px}
         .viewport[data-short-summary="1"] .u154-band{min-height:58px}
         .viewport[data-short-summary="1"] .u154-status{padding:5px 4px}
         .content{padding:12px 12px calc(38px + env(safe-area-inset-bottom))!important;transform-origin:top left;will-change:transform}
@@ -4519,7 +4528,6 @@ if (Panel && !Panel.prototype.__ui158) {
         .viewport[data-zoomed="1"]:active{cursor:grabbing}
         .peer-selector{padding-top:4px!important;padding-bottom:4px!important}.peer{height:44px!important;min-height:44px}
         .row{min-width:0}.row>span{min-width:0}.row>strong{min-width:0;max-width:62%;overflow-wrap:anywhere;word-break:break-word}
-        .u154-mode strong{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
         .u154-metric span,.u154-status span,.u154-note,.u155-control-top small,.u136-control .u136-set span,.u136-control .u136-flap small,.u136-control .u136-feature small,.u144-pending,.u144-log,.history155 text{font-size:12px!important}
         .header-action#refresh{transition:transform .12s ease,color .18s ease,background .18s ease}
         .header-action#refresh:active{transform:scale(.90)}
@@ -4756,53 +4764,35 @@ const PEERS160 = [
   },
 ];
 
-const finite160 = (value) => value !== null && value !== "" && Number.isFinite(Number(value));
-const known160 = (value) => value !== null && value !== undefined && !["", "—", "unknown", "unavailable"].includes(String(value));
-
 if (Panel && !Panel.prototype.__ui160) {
-  const previousConnection = Panel.prototype.connection;
   const previousRender = Panel.prototype.render;
   const previousPatch = Panel.prototype.patch;
 
-  Panel.prototype.__hasSyncleoSnapshot160 = function(m) {
-    const attributes = m?.climate?.attributes || {};
-    const evidence = [
-      finite160(attributes.current_temperature),
-      finite160(attributes.temperature),
-      known160(attributes.fan_mode),
-    ];
-    return evidence.filter(Boolean).length >= 2;
-  };
-
   Panel.prototype.connection = function(m) {
-    const base = previousConnection.call(this, m);
-    if (!m?.climate) return base;
+    const noData = {tone: "nodata", label: "Нет данных", fresh: "Нет данных"};
+    if (!m?.climate) return noData;
     const registry = this.registryEntry(m.climate.entity_id);
-    if (registry?.platform !== "syncleo") return base;
+    if (registry?.platform !== "syncleo") return noData;
 
-    this.__syncleoSnapshots160 ||= new Set();
-    const entityId = m.climate.entity_id;
-    const hasSnapshot = this.__hasSyncleoSnapshot160(m);
-    if (hasSnapshot) this.__syncleoSnapshots160.add(entityId);
-    const hadSnapshot = this.__syncleoSnapshots160.has(entityId);
-
-    if (!m.available) {
-      return {
-        tone: hadSnapshot ? "offline freshness-stale" : "offline freshness-none",
-        label: "Нет связи",
-        fresh: hadSnapshot ? "Данные устарели" : "Нет данных",
-      };
+    // Syncleo availability reports the local transport. HA values can also be
+    // optimistic command writes; their presence and HA timestamps prove no RX.
+    const state = m.climate.state;
+    if (state === "unavailable") {
+      return {tone: "offline freshness-none", label: "Нет связи", fresh: "Нет данных"};
     }
-    if (hasSnapshot) {
-      return {tone: "local freshness-confirmed", label: "Локально", fresh: "Состояние получено"};
+    if (!m.available || !["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"].includes(state)) {
+      return noData;
     }
-    return {tone: "local freshness-pending", label: "Локально", fresh: "Ожидание данных"};
+    // A received-sample timestamp/generation is not exported by Syncleo yet.
+    // Keep the known route, but do not invent freshness or stale-sample memory.
+    return {tone: "local freshness-unknown", label: "Локально", fresh: "Нет данных"};
   };
 
   Panel.prototype.peerConnectionTone160 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Состояние получено") return "ok";
+    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
+    if (connection.label === "Локально" && connection.fresh === "Данные устарели") return "warn";
     return "nodata";
   };
 
@@ -4811,49 +4801,6 @@ if (Panel && !Panel.prototype.__ui160) {
     if (!root) return;
     const version = root.querySelector?.(".header-title span");
     if (version) version.textContent = `UI v${UI160}`;
-    if (root.querySelector?.("style[data-nikas-ui160]") || typeof document === "undefined") return;
-    const style = document.createElement("style");
-    style.dataset.nikasUi160 = "1";
-    style.textContent = `
-      .u154-head{
-        grid-template-columns:minmax(0,1fr) minmax(168px,42%)!important;
-      }
-      .u154-connection .connection-indicator{
-        min-height:58px!important;
-        padding:12px 14px!important;
-        border-radius:18px!important;
-        column-gap:9px!important;
-      }
-      .connection-indicator.local.freshness-pending{
-        background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color))!important;
-        border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))!important;
-      }
-      .connection-indicator.local.freshness-pending .connection-lamp{
-        background:var(--success-color,#43a047)!important;
-      }
-      .connection-indicator.local.freshness-pending strong{
-        color:var(--success-color,#43a047)!important;
-      }
-      .connection-indicator.freshness-stale small{
-        color:var(--warning-color,#f6a623)!important;
-        font-weight:600!important;
-      }
-      @media(max-width:520px){
-        .u154-head{
-          grid-template-columns:minmax(0,1fr) minmax(168px,44%)!important;
-        }
-      }
-      @media(max-width:360px){
-        .u154-head{
-          grid-template-columns:minmax(0,1fr) minmax(160px,48%)!important;
-          gap:8px!important;
-        }
-        .u154-connection .connection-indicator{
-          padding-inline:11px!important;
-        }
-      }
-    `;
-    root.appendChild(style);
   };
 
   Panel.prototype.__updatePeerConnectionTones160 = function() {
@@ -4868,7 +4815,7 @@ if (Panel && !Panel.prototype.__ui160) {
       const tone = this.peerConnectionTone160(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Канал: ${connection.label}. Данные: ${connection.fresh}.`;
+      peer.title = `Канал: ${connection.label}. Актуальность: ${connection.fresh}.`;
     });
   };
 
@@ -4893,7 +4840,7 @@ if (Panel && !Panel.prototype.__ui160) {
 /* source: nikas-climate-entry-161.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI161 = "1.4.24";
+const UI161 = "1.4.25";
 
 if (Panel && !Panel.prototype.__ui161) {
   const previousRender = Panel.prototype.render;
@@ -4904,35 +4851,6 @@ if (Panel && !Panel.prototype.__ui161) {
     if (!root) return;
     const version = root.querySelector?.(".header-title span");
     if (version) version.textContent = `UI v${UI161}`;
-    if (root.querySelector?.("style[data-nikas-ui161]") || typeof document === "undefined") return;
-    const style = document.createElement("style");
-    style.dataset.nikasUi161 = "1";
-    style.textContent = `
-      .u154-connection .connection-indicator{
-        height:58px!important;
-        min-height:58px!important;
-        max-height:58px!important;
-      }
-      .u154-connection .connection-copy{
-        row-gap:3px!important;
-      }
-      .u154-connection .connection-copy strong{
-        font-size:16px!important;
-        line-height:1.05!important;
-        font-weight:700!important;
-      }
-      .u154-connection .connection-copy small{
-        font-size:13px!important;
-        line-height:1.05!important;
-        font-weight:600!important;
-      }
-      @media(min-width:341px) and (max-width:360px){
-        .u154-head{
-          grid-template-columns:minmax(0,1fr) 168px!important;
-        }
-      }
-    `;
-    root.appendChild(style);
   };
 
   Panel.prototype.render = function(...args) {
