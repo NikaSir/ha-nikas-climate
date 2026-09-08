@@ -127,8 +127,8 @@
   "connection_plaque_reference": "NikaS Standard 2.2 canonical connection plaque",
   "connection_plaque_mutation_allowed": false,
   "connection_plaque_padding_px": [
-    12,
-    14
+    11,
+    12
   ],
   "connection_plaque_radius_px": 18,
   "connection_levels": [
@@ -167,15 +167,15 @@
   ],
   "production_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
   "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-161.js",
-  "connection_plaque_width_px": 200,
-  "connection_plaque_height_px": 60,
-  "connection_plaque_top_px": 16,
-  "connection_plaque_right_px": 16,
+  "connection_plaque_width_px": 168,
+  "connection_plaque_height_px": 58,
+  "connection_plaque_top_px": 13,
+  "connection_plaque_right_px": 13,
   "connection_freshness_status": "not_verified",
   "connection_decoration_contract": {
-    "version": "1.0",
-    "source": "https://github.com/NikaSir/ha-contract-generated-ui/blob/d0f0916abca03749df41e4a687da2e00daef66a1/docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md",
-    "sha256": "7a6c24a3488a37626cca4d6f844d1f9080c8f572e1e7e23ce6a89a466cdabae8",
+    "version": "1.1",
+    "source": "https://github.com/NikaSir/ha-contract-generated-ui/blob/cbe6a1fecdfc2eb6916ae7d9a727751754cd83f0/docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md",
+    "sha256": "0cbc29e20fd811af3e14821ca59adbe737d2e22a9a8a6822472d52cc8ed83036",
     "production_browser_acceptance_required": true
   },
   "blue_corner_reference": {

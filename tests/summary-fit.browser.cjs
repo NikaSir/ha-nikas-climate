@@ -1,9 +1,15 @@
-// NIKAS_CONNECTION_DECORATION_CONTRACT v1.0: production bundle/assets, mocked HA data/icons.
+// NIKAS_CONNECTION_DECORATION_CONTRACT v1.1: production bundle/assets, mocked HA data/icons.
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs=require('node:fs'), path=require('node:path'), assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'../custom_components/nikas_climate/frontend');
+// HA frontend src/resources/roboto.ts supplies these faces globally. Loading the
+// real roboto-fontface@0.10.0 files reproduces the host; production CSS is unchanged.
+const haFontRoot=process.env.HA_FONT_ROOT || path.join(path.dirname(require.resolve('roboto-fontface/package.json')),'fonts/roboto');
+const haFontFaces=[['Regular',400],['Medium',500],['Bold',700]];
+for(const [face]of haFontFaces)assert(fs.existsSync(path.join(haFontRoot,`Roboto-${face}.woff2`)),`HA Roboto-${face}.woff2 fixture dependency missing`);
+const haFontCSS=haFontFaces.map(([face,weight])=>`@font-face{font-family:Roboto;font-style:normal;font-weight:${weight};font-display:swap;src:local('${face==='Regular'?'Roboto':`Roboto ${face}`}'),local('Roboto-${face}'),url('/ha-fonts/Roboto-${face}.woff2') format('woff2')}`).join('');
 const shots=process.env.NIKAS_SCREENSHOT_DIR;
 const close=(a,b,label,tolerance=.1)=>assert(Math.abs(a-b)<=tolerance,`${label}: ${a} != ${b}`);
 const font=value=>value.replace(/["'\s]/g,'').toLowerCase();
@@ -15,7 +21,8 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
   const page=await context.newPage();
   await page.route('http://panel.test/**',route=>{
    const pathname=new URL(route.request().url()).pathname;
-   if(pathname==='/')return route.fulfill({contentType:'text/html',body:'<meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;--primary-text-color:#111;--secondary-text-color:#666;--primary-color:#03a9d9;--success-color:#43a047;--warning-color:#f6a623;--error-color:#e53935;--card-background-color:white;--primary-background-color:#f7f8fa;--secondary-background-color:#eee;--disabled-text-color:#aaa;--divider-color:#ddd}</style><script type="module" src="/nikas_climate_panel/nikas-climate-production.js"></script>'});
+   if(pathname==='/')return route.fulfill({contentType:'text/html',body:'<meta name="viewport" content="width=device-width,initial-scale=1"><style>'+haFontCSS+'html,body{margin:0;height:100%;--primary-text-color:#111;--secondary-text-color:#666;--primary-color:#03a9d9;--success-color:#43a047;--warning-color:#f6a623;--error-color:#e53935;--card-background-color:white;--primary-background-color:#f7f8fa;--secondary-background-color:#eee;--disabled-text-color:#aaa;--divider-color:#ddd}</style><script type="module" src="/nikas_climate_panel/nikas-climate-production.js"></script>'});
+   if(pathname.startsWith('/ha-fonts/'))return route.fulfill({path:path.join(haFontRoot,path.basename(pathname)),contentType:'font/woff2'});
    const file=path.join(root,pathname.replace('/nikas_climate_panel/',''));
    return fs.existsSync(file)?route.fulfill({path:file}):route.fulfill({status:404,body:''});
   });
@@ -70,36 +77,48 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
   });
   // Actual HA icon box dimensions must participate before fitting the image.
   await page.evaluate(()=>customElements.define('ha-icon',class extends HTMLElement {connectedCallback(){this.style.display='inline-block';this.style.width='var(--mdc-icon-size,24px)';this.style.height='var(--mdc-icon-size,24px)';}}));
+  await page.evaluate(async()=>{await Promise.all([400,500,600,700].map(w=>document.fonts.load(`${w} 13px Roboto`,'Данные актуальны')));await document.fonts.ready;});
   const settle=()=>page.waitForTimeout(180);await settle();
+  const cdp=await context.newCDPSession(page);await cdp.send('DOM.enable');await cdp.send('CSS.enable');
+  const {root:documentNode}=await cdp.send('DOM.getDocument',{depth:-1,pierce:true});
+  const findPanel=node=>node.localName==='nikas-climate-panel'?node:(node.children||[]).map(findPanel).find(Boolean);
+  const panelNode=findPanel(documentNode),platformFonts={};
+  for(const [name,selector]of [['main','.connection-copy strong'],['freshness','.connection-copy small']]){
+   const {nodeId}=await cdp.send('DOM.querySelector',{nodeId:panelNode.shadowRoots[0].nodeId,selector});
+   platformFonts[name]=(await cdp.send('CSS.getPlatformFontsForNode',{nodeId})).fonts;
+   assert(platformFonts[name].length&&platformFonts[name].every(f=>f.familyName.startsWith('Roboto')),`HA host font should render ${name}: ${JSON.stringify(platformFonts[name])}`);
+  }
   const evidence=[];
   const measure=async name=>{
    const g=await page.evaluate(()=>geometry());
    const expect=(obj,want)=>{for(const [key,value]of Object.entries(want))assert.equal(obj[key],value,`${name}: ${key}`);};
-   close(g.plaque.width,200,`${name}: plaque width`);close(g.plaque.height,60,`${name}: plaque height`);close(g.plaque.top,17,`${name}: plaque top`);close(g.card.width-g.plaque.right,17,`${name}: plaque right`);
+   close(g.plaque.width,168,`${name}: plaque width`);close(g.plaque.height,58,`${name}: plaque height`);close(g.plaque.top,14,`${name}: plaque top`);close(g.card.width-g.plaque.right,14,`${name}: plaque right`);
    close(g.circle.width,205,`${name}: circle width`);close(g.circle.height,205,`${name}: circle height`);close(g.circle.top,-91,`${name}: circle top`);close(g.circle.right-g.card.width,69,`${name}: circle right`);
    expect(g.cardCSS,{position:'relative',isolation:'isolate',boxSizing:'border-box',borderTopWidth:'1px',borderRightWidth:'1px',borderBottomWidth:'1px',borderLeftWidth:'1px',paddingTop:'16px',paddingRight:'16px',paddingBottom:'16px',paddingLeft:'16px'});
    assert.notEqual(g.cardCSS.overflow,'hidden',`${name}: only decoration clips`);
-   expect(g.plaqueCSS,{position:'absolute',top:'16px',right:'16px',boxSizing:'border-box',width:'200px',minWidth:'200px',maxWidth:'200px',height:'60px',minHeight:'60px',maxHeight:'60px',paddingTop:'12px',paddingRight:'14px',paddingBottom:'12px',paddingLeft:'14px',marginTop:'0px',marginRight:'0px',marginBottom:'0px',marginLeft:'0px',borderTopWidth:'1px',borderRadius:'18px',display:'grid',gridTemplateColumns:'10px 149px',columnGap:'11px',alignItems:'center',zIndex:'2',boxShadow:'rgba(0, 0, 0, 0.055) 0px 4px 14px 0px',transitionDuration:'0s',animationName:'none'});
+   expect(g.plaqueCSS,{position:'absolute',top:'13px',right:'13px',boxSizing:'border-box',width:'168px',minWidth:'168px',maxWidth:'168px',height:'58px',minHeight:'58px',maxHeight:'58px',paddingTop:'11px',paddingRight:'12px',paddingBottom:'11px',paddingLeft:'12px',marginTop:'0px',marginRight:'0px',marginBottom:'0px',marginLeft:'0px',borderTopWidth:'1px',borderRadius:'18px',display:'grid',gridTemplateColumns:'10px 123px',columnGap:'9px',alignItems:'center',zIndex:'2',boxShadow:'rgba(0, 0, 0, 0.055) 0px 4px 14px 0px',transitionDuration:'0s',animationName:'none'});
    expect(g.decorationCSS,{position:'absolute',top:'0px',right:'0px',bottom:'0px',left:'0px',borderRadius:g.cardCSS.borderRadius,overflow:'hidden',zIndex:'0',pointerEvents:'none',opacity:'1'});
    close(g.decoration.left,1,`${name}: decoration inset`);close(g.decoration.top,1,`${name}: decoration inset`);close(g.decoration.width,g.card.width-2,`${name}: decoration width`);
    expect(g.circleCSS,{position:'absolute',top:'-92px',right:'-70px',width:'205px',height:'205px',borderRadius:'50%',backgroundColor:'rgba(3, 169, 217, 0.07)',opacity:'1',borderTopWidth:'0px',boxShadow:'none',filter:'none',transform:'none',animationName:'none'});
    expect(g.lampCSS,{width:'10px',height:'10px',borderRadius:'50%',boxShadow:'none'});close(g.lamp.width,10,`${name}: lamp width`);close(g.lamp.height,10,`${name}: lamp height`);
-   expect(g.copyCSS,{display:'flex',flexDirection:'column',rowGap:'3px',textAlign:'left'});close(g.copy.height,34,`${name}: text stack height`);close(g.copy.width,149,`${name}: text column width`);
+   expect(g.copyCSS,{display:'flex',flexDirection:'column',rowGap:'3px',textAlign:'left'});close(g.copy.height,34,`${name}: text stack height`);close(g.copy.width,123,`${name}: text column width`);
    for(const [css,size,weight,line]of [[g.mainCSS,'16px','700','17px'],[g.freshCSS,'13px','600','14px']]){
     assert.equal(font(css.fontFamily),sharedFont,`${name}: font stack`);
     expect(css,{fontSize:size,fontWeight:weight,lineHeight:line,marginTop:'0px',marginRight:'0px',marginBottom:'0px',marginLeft:'0px',paddingTop:'0px',paddingRight:'0px',paddingBottom:'0px',paddingLeft:'0px',fontStyle:'normal',textTransform:'none',whiteSpace:'nowrap',textOverflow:'clip'});
     assert(['normal','0px'].includes(css.letterSpacing),`${name}: zero letter spacing`);
    }
    assert(g.decorativeOnly&&g.accessiblePlaque,`${name}: accessible state and decorative-only circle`);assert.equal(g.heroZ,'1',`${name}: content layer`);
+   const textOverflow=g.textRects.some(text=>text.left<g.copy.left-.1||text.right>g.copy.right+.1);
+   if(textOverflow&&shots){fs.mkdirSync(shots,{recursive:true});fs.writeFileSync(path.join(shots,'text-overflow.json'),JSON.stringify({name,...g},null,2));await page.screenshot({path:path.join(shots,'text-overflow.png')});}
    for(const text of g.textRects)assert(text.left>=g.copy.left-.1&&text.right<=g.copy.right+.1,`${name}: full label does not fit ${JSON.stringify({text,copy:g.copy})}`);
    for(const text of g.titleRects){
     const overlap=text.left<g.plaque.right-.1&&text.right>g.plaque.left+.1&&text.top<g.plaque.bottom-.1&&text.bottom>g.plaque.top+.1;
     assert(!overlap,`${name}: title overlaps plaque ${JSON.stringify({text,plaque:g.plaque})}`);assert(text.bottom<=g.photo.top+.1,`${name}: title overlays image`);
    }
-   close(g.photo.top-g.heading.bottom,12,`${name}: heading/image gap`);assert(g.heading.height>=60,`${name}: minimum heading height`);
-   expect(g.headingCSS,{paddingRight:g.card.width<360?'0px':'212px',paddingTop:g.card.width<360?'72px':'0px'});
+   close(g.photo.top-g.heading.bottom,12,`${name}: heading/image gap`);assert(g.heading.height>=58,`${name}: minimum heading height`);
+   expect(g.headingCSS,{paddingRight:g.card.width<360?'0px':'177px',paddingTop:g.card.width<360?'67px':'0px'});
    if(g.scale===1)assert.equal(g.horizontalOverflow,0,`${name}: horizontal overflow`);
-   evidence.push({name,ui:g.ui,viewport:g.viewport,hostWidth:g.hostWidth,card:g.card,scale:g.scale,plaque:g.plaque,circle:g.circle,label:g.label,freshness:g.freshness,palette:g.palette,computed:{plaque:g.plaqueCSS,circle:g.circleCSS,main:g.mainCSS,fresh:g.freshCSS}});
+   evidence.push({name,ui:g.ui,viewport:g.viewport,hostWidth:g.hostWidth,card:g.card,scale:g.scale,plaque:g.plaque,circle:g.circle,label:g.label,freshness:g.freshness,textWidths:g.textRects.map(r=>r.right-r.left),palette:g.palette,computed:{plaque:g.plaqueCSS,circle:g.circleCSS,main:g.mainCSS,fresh:g.freshCSS}});
    return g;
   };
   const setHost=async(width,height,top=0,bottom=0,sidebar=0)=>{
@@ -151,7 +170,7 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
   for(const scale of [.75,1,1.5,2]){await page.evaluate(s=>p.setZoom158(s,null,{persist:false}),scale);await settle();const g=await measure(`zoom-${scale*100}`);close(g.scale,scale,'work scale');assert.deepEqual(g.shellRects,nativeShell,'header, peers and bottom menu remain at native scale');}
   // Trigger the real two-finger double-tap handler, rather than resetZoom158().
   await page.evaluate(()=>{const v=p.shadowRoot.querySelector('.viewport');const dispatch=(type,points)=>{const e=new Event(type,{bubbles:true,cancelable:true});Object.defineProperty(e,'touches',{value:points.map(([clientX,clientY])=>({clientX,clientY}))});v.dispatchEvent(e);};for(let i=0;i<2;i++){dispatch('touchstart',[[100,300],[200,300]]);dispatch('touchend',[]);}});await settle();const reset=await measure('two-finger-reset');close(reset.scale,1,'reset scale');
-  if(shots)fs.writeFileSync(path.join(shots,'geometry-evidence.json'),JSON.stringify({baseCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:path.resolve(__dirname,'..'),encoding:'utf8'}).trim(),productionSHA256:createHash('sha256').update(fs.readFileSync(path.join(root,'nikas-climate-production.js'))).digest('hex'),browser:browser.version(),environment:'Chromium; mocked HA states/services/icons; production bundle and image assets',cases:evidence},null,2));
+  if(shots)fs.writeFileSync(path.join(shots,'geometry-evidence.json'),JSON.stringify({baseCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:path.resolve(__dirname,'..'),encoding:'utf8'}).trim(),productionSHA256:createHash('sha256').update(fs.readFileSync(path.join(root,'nikas-climate-production.js'))).digest('hex'),browser:browser.version(),environment:'Chromium; mocked HA states/services/icons; actual HA Roboto fonts (roboto-fontface@0.10.0); production bundle and image assets',platformFonts,cases:evidence},null,2));
   console.log(`PASS production plaque/corner: ${evidence.length} cases; exact geometry/typography, stable DOM, safe-area fit, card breakpoint, themes, 75–200% zoom.`);
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
