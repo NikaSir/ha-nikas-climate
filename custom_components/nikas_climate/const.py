@@ -1,5 +1,5 @@
 """Constants for NikaS Climate."""
 
 DOMAIN = "nikas_climate"
-VERSION = "0.1.50"
-UI_VERSION = "1.4.21"
+VERSION = "0.1.51"
+UI_VERSION = "1.4.22"
