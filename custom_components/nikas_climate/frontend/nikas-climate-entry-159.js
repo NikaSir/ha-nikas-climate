@@ -38,6 +38,7 @@ if (Panel && !Panel.prototype.__ui159) {
     const version = root.querySelector?.(".header-title span");
     if (version) version.textContent = `UI v${UI159}`;
     if (root.querySelector?.("style[data-nikas-ui159]")) return;
+    if (typeof document === "undefined") return;
     const style = document.createElement("style");
     style.dataset.nikasUi159 = "1";
     style.textContent = `
