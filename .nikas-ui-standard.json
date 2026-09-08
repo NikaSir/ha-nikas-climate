@@ -1,8 +1,8 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.51",
-  "ui_version": "1.4.22",
+  "integration_version": "0.1.52",
+  "ui_version": "1.4.23",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
   "safe_return_route": "/dashboard-house-v13/home",
@@ -111,30 +111,34 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.22",
+  "header_title_line_2": "UI v1.4.23",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
   "peer_device_status_lamps": true,
-  "peer_device_status_lamp_source": "connection_channel_and_freshness",
+  "peer_device_status_lamp_source": "connection_channel_and_snapshot_evidence",
   "peer_device_status_lamp_colors": {
-    "confirmed_current": "success",
-    "unknown_freshness_or_source": "neutral",
+    "confirmed_channel_and_snapshot": "success",
+    "channel_without_snapshot_or_unknown_source": "neutral",
     "unavailable": "error"
   },
   "peer_device_mode_icons": true,
   "peer_mode_icon_source": "actual_hvac_mode",
   "connection_plaque_reference": "NikaS Standard 2.2 canonical connection plaque",
   "connection_plaque_mutation_allowed": false,
+  "connection_plaque_mobile_width_px": 168,
+  "connection_plaque_min_height_px": 58,
+  "connection_plaque_padding_px": [12, 14],
+  "connection_plaque_radius_px": 18,
   "connection_levels": [
     "channel",
-    "freshness"
+    "snapshot_evidence"
   ],
   "connection_transport_evidence": [
     "entity_registry.platform=syncleo",
     "entity_available=true"
   ],
-  "connection_freshness_evidence": "not_exposed_by_syncleo_fail_closed_no_data",
+  "connection_freshness_evidence": "syncleo_snapshot_presence_without_age_claim",
   "connection_plaque_scope": "summary-only",
   "control_transport": "Syncleo local UDP",
   "wan_required": false,
@@ -161,5 +165,5 @@
     "14 - Веранда"
   ],
   "production_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
-  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-159.js"
+  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-160.js"
 }
