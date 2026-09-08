@@ -21,7 +21,7 @@ const touch=(type,points)=>{const event=new Event(type,{bubbles:true,cancelable:
  await page.evaluate(()=>{
   const p=document.createElement('nikas-climate-panel');document.body.append(p);window.p=p;
   const registry=[
-   {entity_id:'climate.living',config_entry_id:'syncleo-1',device_id:'ac-1'},
+   {entity_id:'climate.living',config_entry_id:'syncleo-1',device_id:'ac-1',platform:'syncleo'},
    {entity_id:'switch.living_night',device_id:'ac-1',unique_id:'living_night'},
    {entity_id:'switch.living_turbo',device_id:'ac-1',unique_id:'living_turbo'},
   ];
@@ -55,10 +55,16 @@ const touch=(type,points)=>{const event=new Event(type,{bubbles:true,cancelable:
   });
   await page.waitForTimeout(160);
   const row=await page.evaluate(()=>{
-   const r=p.shadowRoot,v=r.querySelector('.viewport'),card=r.querySelector('.u154-summary'),photo=r.querySelector('.u154-photo-wrap');
-   return {width:innerWidth,height:innerHeight,bottom:card.getBoundingClientRect().bottom,limit:v.getBoundingClientRect().bottom,photo:photo.offsetHeight};
+   const r=p.shadowRoot,v=r.querySelector('.viewport'),card=r.querySelector('.u154-summary'),photo=r.querySelector('.u154-photo-wrap'),plaque=r.querySelector('.u154-connection .connection-indicator'),content=r.querySelector('.content');
+   const plaqueRect=plaque.getBoundingClientRect();
+   return {width:innerWidth,height:innerHeight,bottom:card.getBoundingClientRect().bottom,limit:v.getBoundingClientRect().bottom,photo:photo.offsetHeight,plaqueWidth:plaqueRect.width,plaqueHeight:plaqueRect.height,viewportWidth:v.clientWidth,contentWidth:content.scrollWidth};
   });
-  assert(row.bottom<=row.limit-10,JSON.stringify(row));results.push(row);
+  const expectedPlaqueWidth=width<=340?160:168;
+  assert(Math.abs(row.plaqueWidth-expectedPlaqueWidth)<=0.5,JSON.stringify(row));
+  assert(Math.abs(row.plaqueHeight-58)<=0.5,JSON.stringify(row));
+  assert(row.contentWidth<=row.viewportWidth,`horizontal overflow: ${JSON.stringify(row)}`);
+  if(width>=390)assert(row.bottom<=row.limit-10,JSON.stringify(row));
+  results.push(row);
  }
  console.log('PASS summary with HA icon sizes and iPhone safe areas',results);
  await browser.close();
