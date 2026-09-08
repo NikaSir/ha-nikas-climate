@@ -1,7 +1,7 @@
 import "./nikas-climate-entry-156.js?v=1.4.16";
 
 const Panel = customElements.get("nikas-climate-panel");
-const UI158 = "1.4.18";
+const UI158 = "1.4.19";
 const TRANSFORM_KEY158 = "nikas_climate.view_transform.v2";
 const PEERS158 = [
   {
