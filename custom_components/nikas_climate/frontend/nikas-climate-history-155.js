@@ -31,7 +31,8 @@ if(Panel&&!Panel.prototype.__history155){
    const slot=root.querySelector(`[data-history-chart="${kind}"]`);if(!slot)return;
    slot.classList.add('history155');
    const heading=`<h3>${title}</h3>`;
-   if(!entity){slot.innerHTML=heading+'<p>Датчик не выбран.</p>';return;}
+   const update=markup=>this.__patchMarkup(slot,markup,true);
+   if(!entity){update(heading+'<p>Датчик не выбран.</p>');return;}
    const key=`${entity}:${hours}`;let record=this._roomHistory155.get(key);
    if(!record||Date.now()-record.loaded>60000){
     const end=Date.now(),start=end-hours*3600000;record={loaded:Date.now(),start,end};
@@ -40,11 +41,11 @@ if(Panel&&!Panel.prototype.__history155){
      const url=`history/period/${encodeURIComponent(new Date(start).toISOString())}?end_time=${encodeURIComponent(new Date(end).toISOString())}&filter_entity_id=${encodeURIComponent(entity)}&minimal_response=false&no_attributes=true`;
      const raw=await this._hass.callApi('GET',url);return {points:this.parseRoomHistory155(raw,entity)};
     }catch(error){return {error:true};}})();this._roomHistory155.set(key,record);
+    update(heading+'<p>Загрузка истории…</p>');
    }
-   slot.innerHTML=heading+'<p>Загрузка истории…</p>';
    const data=await record.promise;if(!slot.isConnected)return;
-   if(data.error){slot.innerHTML=heading+'<p>Не удалось получить историю Home Assistant.</p><button data-history-retry>Повторить</button>';slot.querySelector('button').onclick=()=>{this._roomHistory155.delete(key);this.mountStatistics154();};return;}
-   slot.innerHTML=heading+this.drawRoomHistory155(data.points,record.start,record.end,unit);
+   if(data.error){update(heading+'<p>Не удалось получить историю Home Assistant.</p><button data-history-retry>Повторить</button>');slot.querySelector('button').onclick=()=>{this._roomHistory155.delete(key);this.mountStatistics154();};return;}
+   update(heading+this.drawRoomHistory155(data.points,record.start,record.end,unit));
   }));
  };
  Panel.prototype.__history155=true;

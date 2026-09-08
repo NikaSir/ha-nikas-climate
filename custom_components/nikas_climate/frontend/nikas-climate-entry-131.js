@@ -9,15 +9,14 @@ if (Panel && !Panel.prototype.__nikasUi131Patched) {
   const previousEnsureRegistries = Panel.prototype.ensureRegistries;
 
   // Night/Turbo are sibling entities discovered through the entity registry.
-  // On a cold panel load the first render happens before that registry is ready,
-  // so the structural feature block can be absent. Re-render exactly once when
-  // registries become available; later HA state updates continue to use patch().
+  // A targeted patch can add their controls after a cold load without replacing
+  // the already mounted shell or the current working-area nodes.
   Panel.prototype.ensureRegistries = async function (force=false) {
     const wasReady = Boolean(this._entityRegistry && this._areaRegistry && this._labelRegistry);
     await previousEnsureRegistries.call(this, force);
     const isReady = Boolean(this._entityRegistry && this._areaRegistry && this._labelRegistry);
     if (!wasReady && isReady && this._rendered) {
-      previousRender.call(this);
+      this.patch();
       const version = this.shadowRoot?.querySelector(".header-title span");
       if (version) version.textContent = `UI v${PATCH_UI_VERSION}`;
     }

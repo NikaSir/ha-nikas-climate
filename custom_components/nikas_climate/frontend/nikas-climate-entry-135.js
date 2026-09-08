@@ -67,15 +67,16 @@ if (Panel && !Panel.prototype.__nikasUi135Patched) {
     if (!root) return;
     const buttons = [...root.querySelectorAll(".peer")];
     buttons.forEach((button, index) => {
-      button.querySelector(".peer-mode-icon")?.remove();
       const room = PEERS[index];
       if (!room) return;
       const m = this.roomModel(room);
-      const icon = document.createElement("ha-icon");
-      icon.className = "peer-mode-icon";
+      let icon = button.querySelector(".peer-mode-icon");
+      if (!icon) {
+        icon = document.createElement("ha-icon");
+        icon.className = "peer-mode-icon";
+        button.prepend(icon);
+      }
       icon.setAttribute("icon", m.available ? this.modeIcon(m.mode) : "mdi:lan-disconnect");
-      const lamp = button.querySelector(".lamp");
-      if (lamp?.nextSibling) button.insertBefore(icon, lamp.nextSibling); else button.prepend(icon);
     });
   };
 
@@ -128,7 +129,7 @@ if (Panel && !Panel.prototype.__nikasUi135Patched) {
     const readyBefore = Boolean(this._entityRegistry && this._areaRegistry && this._labelRegistry);
     await previousEnsureRegistries.call(this, force);
     const readyAfter = Boolean(this._entityRegistry && this._areaRegistry && this._labelRegistry);
-    if (!readyBefore && readyAfter && this._rendered) this.render();
+    if (!readyBefore && readyAfter && this._rendered) this.patch();
   };
 
   Panel.prototype.__installNikasUi135 = function() {

@@ -286,6 +286,65 @@ class NikasClimatePanel extends HTMLElement {
       (m.features?.turbo != null && draft.turbo !== m.features.turbo);
   }
 
+  __compatibleDomNode(current, fresh) {
+    return current?.nodeType === fresh?.nodeType &&
+      (current.nodeType !== 1 || current.tagName === fresh.tagName);
+  }
+
+  __reconcileDomNode(current, fresh) {
+    if (!this.__compatibleDomNode(current, fresh)) {
+      current.replaceWith(fresh);
+      return fresh;
+    }
+    if (current.nodeType === 3) {
+      if (current.nodeValue !== fresh.nodeValue) current.nodeValue = fresh.nodeValue;
+      return current;
+    }
+    for (const attribute of [...current.attributes]) {
+      if (!fresh.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...fresh.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+    // History is mounted asynchronously. Empty placeholders in statistics()
+    // must not tear down a live graph on every unrelated HA state update.
+    if (!current.hasAttribute("data-history-chart")) {
+      this.__reconcileDomChildren(current, [...fresh.childNodes]);
+    }
+    return current;
+  }
+
+  __reconcileDomChildren(container, freshChildren) {
+    for (let index = 0; index < Math.max(container.childNodes.length, freshChildren.length); index += 1) {
+      const current = container.childNodes[index];
+      const fresh = freshChildren[index];
+      if (!current && fresh) {
+        container.append(fresh);
+        continue;
+      }
+      if (current && !fresh) {
+        current.remove();
+        index -= 1;
+        continue;
+      }
+      this.__reconcileDomNode(current, fresh);
+    }
+  }
+
+  __patchMarkup(container, markup, preserve=true) {
+    if (!container) return;
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+    const freshChildren = [...template.content.childNodes];
+    if (!preserve) {
+      container.replaceChildren(...freshChildren);
+      return;
+    }
+    this.__reconcileDomChildren(container, freshChildren);
+  }
+
   render() {
     this.shadowRoot.innerHTML = `
       <style>
@@ -338,11 +397,18 @@ class NikasClimatePanel extends HTMLElement {
     if (refresh) refresh.disabled = this._refreshing;
 
     const devices = this.shadowRoot.getElementById("devices");
-    devices.innerHTML = models.map((m) => { const h=this.health(m); const active=m.room.key===selected.room.key; return `<button class="peer ${active?"active":""}" data-room="${m.room.key}"><i class="peer-lamp ${h.tone}"></i><span>${m.room.title}</span></button>`; }).join("");
+    this.__patchMarkup(devices, models.map((m) => {
+      const h=this.health(m), active=m.room.key===selected.room.key;
+      const icon=typeof this.peerStateIcon==="function" ? `<ha-icon class="peer-mode-icon" icon="${this.peerStateIcon(m)}"></ha-icon>` : "";
+      return `<button class="peer ${active?"active":""}" data-room="${m.room.key}">${icon}<i class="peer-lamp ${h.tone}"></i><span>${m.room.title}</span></button>`;
+    }).join(""));
     devices.querySelectorAll(".peer").forEach((b) => b.onclick = () => { this._selected=b.dataset.room; localStorage.setItem("nikas_climate.peer",this._selected); this.shadowRoot.querySelector(".viewport").scrollTop=0; this.patch(); });
     this.shadowRoot.querySelectorAll(".bottom-nav button").forEach((b) => b.classList.toggle("active",b.dataset.tab===this._tab));
     const content = this.shadowRoot.getElementById("content");
-    content.innerHTML = this._tab === "summary" ? this.summary(selected) : this._tab === "control" ? this.control(selected) : this._tab === "statistics" ? this.statistics(selected) : this.diagnostics(selected);
+    const viewKey = `${selected.room.key}:${this._tab}`;
+    const markup = this._tab === "summary" ? this.summary(selected) : this._tab === "control" ? this.control(selected) : this._tab === "statistics" ? this.statistics(selected) : this.diagnostics(selected);
+    this.__patchMarkup(content, markup, this.__contentView === viewKey);
+    this.__contentView = viewKey;
     this.bindControls(selected);
     if (this._tab === "summary") this.ensureHistory(selected);
   }
@@ -1487,15 +1553,16 @@ if (Panel && !Panel.prototype.__nikasUi136Patched) {
     const root = this.shadowRoot;
     if (!root) return;
     [...root.querySelectorAll(".peer")].forEach((button, index) => {
-      button.querySelector(".peer-mode-icon")?.remove();
       const room = PEERS[index];
       if (!room) return;
       const m = this.roomModel(room);
-      const icon = document.createElement("ha-icon");
-      icon.className = "peer-mode-icon";
+      let icon = button.querySelector(".peer-mode-icon");
+      if (!icon) {
+        icon = document.createElement("ha-icon");
+        icon.className = "peer-mode-icon";
+        button.prepend(icon);
+      }
       icon.setAttribute("icon", m.available ? this.modeIcon(m.mode) : "mdi:lan-disconnect");
-      const lamp = button.querySelector(".lamp");
-      if (lamp) lamp.insertAdjacentElement("afterend", icon); else button.prepend(icon);
     });
   };
 
@@ -1548,7 +1615,7 @@ if (Panel && !Panel.prototype.__nikasUi136Patched) {
     const before=Boolean(this._entityRegistry&&this._areaRegistry&&this._labelRegistry);
     await previousEnsureRegistries.call(this,force);
     const after=Boolean(this._entityRegistry&&this._areaRegistry&&this._labelRegistry);
-    if(!before&&after&&this._rendered) this.render();
+    if(!before&&after&&this._rendered) this.patch();
   };
 
   Panel.prototype.__installNikasUi136 = function() {
@@ -3915,7 +3982,8 @@ if(Panel&&!Panel.prototype.__history155){
    const slot=root.querySelector(`[data-history-chart="${kind}"]`);if(!slot)return;
    slot.classList.add('history155');
    const heading=`<h3>${title}</h3>`;
-   if(!entity){slot.innerHTML=heading+'<p>Датчик не выбран.</p>';return;}
+   const update=markup=>this.__patchMarkup(slot,markup,true);
+   if(!entity){update(heading+'<p>Датчик не выбран.</p>');return;}
    const key=`${entity}:${hours}`;let record=this._roomHistory155.get(key);
    if(!record||Date.now()-record.loaded>60000){
     const end=Date.now(),start=end-hours*3600000;record={loaded:Date.now(),start,end};
@@ -3924,11 +3992,11 @@ if(Panel&&!Panel.prototype.__history155){
      const url=`history/period/${encodeURIComponent(new Date(start).toISOString())}?end_time=${encodeURIComponent(new Date(end).toISOString())}&filter_entity_id=${encodeURIComponent(entity)}&minimal_response=false&no_attributes=true`;
      const raw=await this._hass.callApi('GET',url);return {points:this.parseRoomHistory155(raw,entity)};
     }catch(error){return {error:true};}})();this._roomHistory155.set(key,record);
+    update(heading+'<p>Загрузка истории…</p>');
    }
-   slot.innerHTML=heading+'<p>Загрузка истории…</p>';
    const data=await record.promise;if(!slot.isConnected)return;
-   if(data.error){slot.innerHTML=heading+'<p>Не удалось получить историю Home Assistant.</p><button data-history-retry>Повторить</button>';slot.querySelector('button').onclick=()=>{this._roomHistory155.delete(key);this.mountStatistics154();};return;}
-   slot.innerHTML=heading+this.drawRoomHistory155(data.points,record.start,record.end,unit);
+   if(data.error){update(heading+'<p>Не удалось получить историю Home Assistant.</p><button data-history-retry>Повторить</button>');slot.querySelector('button').onclick=()=>{this._roomHistory155.delete(key);this.mountStatistics154();};return;}
+   update(heading+this.drawRoomHistory155(data.points,record.start,record.end,unit));
   }));
  };
  Panel.prototype.__history155=true;
@@ -4012,7 +4080,7 @@ if(Panel&&!Panel.prototype.__ui156){
 /* source: nikas-climate-entry-158.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI158 = "1.4.20";
+const UI158 = "1.4.21";
 const TRANSFORM_KEY158 = "nikas_climate.view_transform.v2";
 const PEERS158 = [
   {
@@ -4544,10 +4612,14 @@ if (Panel && !Panel.prototype.__ui158) {
 
     if (devices && oldDevices.length === devices.children.length) {
       const freshDevices = [...devices.children];
-      const retained = oldDevices.map((node, index) => morph158(node, freshDevices[index]));
-      devices.replaceChildren(...retained);
+      if (!oldDevices.every((node, index) => node === freshDevices[index])) {
+        const retained = oldDevices.map((node, index) => morph158(node, freshDevices[index]));
+        if (!retained.every((node, index) => node === devices.children[index])) {
+          devices.replaceChildren(...retained);
+        }
+      }
     }
-    if (content && oldContent && oldView === nextView && content.firstElementChild) {
+    if (content && oldContent && oldView === nextView && content.firstElementChild && content.firstElementChild !== oldContent) {
       const retained = morph158(oldContent, content.firstElementChild);
       content.replaceChildren(retained);
     }
@@ -4555,7 +4627,7 @@ if (Panel && !Panel.prototype.__ui158) {
       viewport.scrollTop = scrollTop;
       viewport.scrollLeft = scrollLeft;
     }
-    if (active?.isConnected && typeof active.focus === "function") {
+    if (active?.isConnected && root?.activeElement !== active && typeof active.focus === "function") {
       try { active.focus({preventScroll: true}); } catch (_error) { active.focus(); }
     }
     this.__domView158 = nextView;

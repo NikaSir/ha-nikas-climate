@@ -114,7 +114,7 @@ if (Panel && !Panel.prototype.__nikasUi133Patched) {
     const models=this._hass?roomDefs.map(r=>this.roomModel(r)):[];
     const devices=this.shadowRoot?.getElementById("devices");
     if(devices&&models.length){
-      devices.innerHTML=models.map(m=>{const h=this.health(m);const active=m.room.key===this._selected;return `<button class="peer ${active?"active":""}" data-room="${m.room.key}"><i class="peer-lamp ${h.tone}"></i><ha-icon class="peer-mode-icon" icon="${this.peerStateIcon(m)}"></ha-icon><span>${m.room.title}</span></button>`;}).join("");
+      this.__patchMarkup(devices,models.map(m=>{const h=this.health(m);const active=m.room.key===this._selected;return `<button class="peer ${active?"active":""}" data-room="${m.room.key}"><ha-icon class="peer-mode-icon" icon="${this.peerStateIcon(m)}"></ha-icon><i class="peer-lamp ${h.tone}"></i><span>${m.room.title}</span></button>`;}).join(""));
       devices.querySelectorAll(".peer").forEach(b=>b.onclick=()=>{this._selected=b.dataset.room;localStorage.setItem("nikas_climate.peer",this._selected);this.shadowRoot.querySelector(".viewport").scrollTop=0;this.patch();});
     }
     return result;
