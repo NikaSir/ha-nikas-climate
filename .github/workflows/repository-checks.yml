@@ -50,9 +50,34 @@ jobs:
           for module in custom_components/nikas_climate/frontend/*.js; do
             node --check "$module"
           done
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          component = Path("custom_components/nikas_climate")
+          panel = (component / "panel.py").read_text(encoding="utf-8")
+          manifest = __import__("json").loads((component / "manifest.json").read_text(encoding="utf-8"))
+          match = re.search(r'^PANEL_BUNDLE\s*=\s*["\']([^"\']+\.js)["\']', panel, re.MULTILINE)
+          if match is None:
+              raise SystemExit("PANEL_BUNDLE does not identify the active JavaScript entrypoint")
+          entry = component / "frontend" / match.group(1)
+          if not entry.is_file():
+              raise SystemExit(f"Active panel entrypoint is missing: {entry}")
+          if not manifest.get("version"):
+              raise SystemExit("Integration version is missing")
+          print(f"OK active entrypoint {entry}")
+          PY
+
+      - name: Check deterministic production bundle
+        run: |
           python scripts/build-frontend.py --check
           python scripts/check-production-contract.py
-          node tests/summary.test.cjs
+
+      - name: Run frontend behavior tests
+        run: |
+          for test_file in tests/*.test.cjs; do
+            node "$test_file"
+          done
 
       - name: Reject tracked credentials and private keys
         shell: bash
