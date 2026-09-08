@@ -83,6 +83,8 @@ Diagnostics must expose runtime capability lists (`hvac_modes`, `fan_modes`, `sw
 
 Device availability, actual local transport, browser connection and per-measurement freshness are separate. `last_changed`, `last_updated`, `last_reported` and transport last activity do not by themselves prove recent incoming device telemetry. Do not call data fresh solely because climate is available. Off mode can remain connected. Default false values before the first received report are not evidence of inactive functions or absence of faults. RSSI is diagnostic and disabled by default in the reviewed integration.
 
+Until Syncleo exposes an accepted-sample timestamp, the connection plaque may distinguish a live local channel from the presence of a populated device snapshot. Snapshot presence may be labelled «Состояние получено», but never «Данные актуальны». After the local channel becomes unavailable, a previously observed snapshot is stale; before any observed snapshot it remains «Нет данных».
+
 `hvac_mode` describes the selected mode. The reviewed Syncleo class has no `hvac_action`; never infer compressor activity from HEAT/COOL, a state image or the room/setpoint difference.
 
 A known Syncleo reference-code concern is that `async_set_temperature()` in the reviewed revision assigns the requested setpoint to `_current_temp`. If device temperature suddenly becomes equal to the setpoint immediately after a command, compare the installed Syncleo version and fix the integration rather than hiding the issue in the UI.
