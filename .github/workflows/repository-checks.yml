@@ -68,6 +68,12 @@ jobs:
           print(f"OK active entrypoint {entry}")
           PY
 
+      - name: Run frontend behavior tests
+        run: |
+          for test_file in tests/*.test.cjs; do
+            node "$test_file"
+          done
+
       - name: Reject tracked credentials and private keys
         shell: bash
         run: |
