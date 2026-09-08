@@ -4,9 +4,12 @@ const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'../custom_components/nikas_climate/frontend');
 const ui160=fs.readFileSync(path.join(root,'nikas-climate-entry-160.js'),'utf8');
+const ui161=fs.readFileSync(path.join(root,'nikas-climate-entry-161.js'),'utf8');
 assert.match(ui160,/minmax\(168px,44%\)/,'mobile plaque column must match the S8 OMNI reference width');
 assert.match(ui160,/min-height:58px!important/,'plaque must match the canonical 58px minimum height');
 assert.match(ui160,/padding:12px 14px!important/,'plaque must use the canonical internal padding');
+assert.match(ui161,/height:58px!important/,'computed plaque height must be locked to 58px');
+assert.match(ui161,/line-height:1\.05!important/,'plaque typography must use the S8 OMNI line height');
 const classes=new Map();
 const context=vm.createContext({console,Map,Set,Date,Number,String,Boolean,Math,Promise,
   HTMLElement:class {attachShadow(){this.shadowRoot={};}},

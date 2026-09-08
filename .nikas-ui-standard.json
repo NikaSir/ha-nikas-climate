@@ -1,8 +1,8 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.52",
-  "ui_version": "1.4.23",
+  "integration_version": "0.1.53",
+  "ui_version": "1.4.24",
   "route": "/dashboard-climate-v1/home",
   "parent_route": "/dashboard-house-v13/home",
   "safe_return_route": "/dashboard-house-v13/home",
@@ -111,7 +111,7 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.23",
+  "header_title_line_2": "UI v1.4.24",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
@@ -127,6 +127,8 @@
   "connection_plaque_reference": "NikaS Standard 2.2 canonical connection plaque",
   "connection_plaque_mutation_allowed": false,
   "connection_plaque_mobile_width_px": 168,
+  "connection_plaque_compact_width_px": 160,
+  "connection_plaque_compact_max_viewport_px": 340,
   "connection_plaque_min_height_px": 58,
   "connection_plaque_padding_px": [12, 14],
   "connection_plaque_radius_px": 18,
@@ -165,5 +167,5 @@
     "14 - Веранда"
   ],
   "production_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
-  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-160.js"
+  "build_source_entrypoint": "custom_components/nikas_climate/frontend/nikas-climate-entry-161.js"
 }

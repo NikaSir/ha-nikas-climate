@@ -39,9 +39,9 @@ assert bundle.is_file()
 
 production = bundle.read_text(encoding="utf-8")
 assert re.search(r"^\s*(?:import|export)\b", production, re.MULTILINE) is None
-assert f'const UI160 = "{ui_version}"' in production
+assert f'const UI161 = "{ui_version}"' in production
 assert 'customElements.define("nikas-climate-panel",NikasClimatePanel)' in production
-assert "nikas-climate-entry-160.js" in production
+assert "nikas-climate-entry-161.js" in production
 assert "nikas-climate-history-155.js" in production
 assert "nikas-climate-statistics.js" in production
 

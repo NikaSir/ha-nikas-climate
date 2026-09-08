@@ -79,6 +79,14 @@ jobs:
             node "$test_file"
           done
 
+      - name: Install mobile browser test runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run mobile geometry regression
+        run: node tests/summary-fit.browser.cjs
+
       - name: Reject tracked credentials and private keys
         shell: bash
         run: |
