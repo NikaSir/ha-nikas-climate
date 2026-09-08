@@ -25,31 +25,10 @@ if (Panel && !Panel.prototype.__ui160) {
   const previousRender = Panel.prototype.render;
   const previousPatch = Panel.prototype.patch;
 
-  Panel.prototype.connection = function(m) {
-    const noData = {tone: "nodata", label: "Нет данных", fresh: "Нет данных"};
-    if (!m?.climate) return noData;
-    const registry = this.registryEntry(m.climate.entity_id);
-    if (registry?.platform !== "syncleo") return noData;
-
-    // Syncleo availability reports the local transport. HA values can also be
-    // optimistic command writes; their presence and HA timestamps prove no RX.
-    const state = m.climate.state;
-    if (state === "unavailable") {
-      return {tone: "offline freshness-none", label: "Нет связи", fresh: "Нет данных"};
-    }
-    if (!m.available || !["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"].includes(state)) {
-      return noData;
-    }
-    // A received-sample timestamp/generation is not exported by Syncleo yet.
-    // Keep the known route, but do not invent freshness or stale-sample memory.
-    return {tone: "local freshness-unknown", label: "Локально", fresh: "Нет данных"};
-  };
-
   Panel.prototype.peerConnectionTone160 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
-    if (connection.label === "Локально" && connection.fresh === "Данные устарели") return "warn";
+    if (connection.label === "Локально") return "ok";
     return "nodata";
   };
 
@@ -72,7 +51,7 @@ if (Panel && !Panel.prototype.__ui160) {
       const tone = this.peerConnectionTone160(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Канал: ${connection.label}. Актуальность: ${connection.fresh}.`;
+      peer.title = `Канал: ${connection.label}. Состояние: ${connection.fresh}.`;
     });
   };
 

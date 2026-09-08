@@ -28,7 +28,7 @@ if (Panel && !Panel.prototype.__ui159) {
   Panel.prototype.peerConnectionTone159 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
+    if (connection.label === "Локально") return "ok";
     return "nodata";
   };
 
@@ -42,12 +42,6 @@ if (Panel && !Panel.prototype.__ui159) {
     const style = document.createElement("style");
     style.dataset.nikasUi159 = "1";
     style.textContent = `
-      .connection-indicator.local.freshness-unknown .connection-lamp{
-        background:var(--disabled-text-color,var(--secondary-text-color))!important;
-      }
-      .connection-indicator.local.freshness-unknown strong{
-        color:var(--secondary-text-color)!important;
-      }
       .peer-lamp.nodata{
         background:var(--disabled-text-color,var(--secondary-text-color))!important;
         box-shadow:0 0 0 3px color-mix(in srgb,var(--disabled-text-color,var(--secondary-text-color)) 22%,transparent)!important;
@@ -68,7 +62,7 @@ if (Panel && !Panel.prototype.__ui159) {
       const tone = this.peerConnectionTone159(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Связь: ${connection.label}. Актуальность: ${connection.fresh}.`;
+      peer.title = `Связь: ${connection.label}. Состояние: ${connection.fresh}.`;
     });
   };
 

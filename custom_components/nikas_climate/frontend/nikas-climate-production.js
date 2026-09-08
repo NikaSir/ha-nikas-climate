@@ -220,16 +220,19 @@ class NikasClimatePanel extends HTMLElement {
   }
 
   connection(m) {
-    if (!m?.climate) return {tone:"nodata", label:"Нет данных", fresh:"Нет данных"};
-    if (!m.available) return {tone:"offline", label:"Нет связи", fresh:"Нет данных"};
+    const noData = {tone:"nodata", label:"Нет данных", fresh:"Нет данных"};
+    if (!m?.climate) return noData;
     const registry = this.registryEntry(m.climate.entity_id);
-    if (registry?.platform !== "syncleo") {
-      return {tone:"nodata", label:"Нет данных", fresh:"Нет данных"};
+    if (registry?.platform !== "syncleo") return noData;
+    const state = m.climate.state;
+    if (state === "unavailable") {
+      return {tone:"offline freshness-none", label:"Нет связи", fresh:"Нет данных"};
     }
-    // Syncleo exposes the live UDP connection through entity availability, but
-    // does not expose an integration-owned timestamp for the last accepted
-    // telemetry sample. Keep transport and freshness independent and fail closed.
-    return {tone:"local freshness-unknown", label:"Локально", fresh:"Нет данных"};
+    if (!m.available || !["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"].includes(state)) return noData;
+    // Availability is the existing Syncleo transport signal, including OFF.
+    // Green means the channel is available, not that a device sample is fresh.
+    // Restored/optimistic HA values and HA timestamps must not prove device RX.
+    return {tone:"local freshness-unknown", label:"Локально", fresh:"Получено в HA"};
   }
 
   activeSwingMode(m, draft=null) {
@@ -359,7 +362,7 @@ class NikasClimatePanel extends HTMLElement {
         .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}.content{width:100%;max-width:1280px;margin:0 auto;padding:12px}
         .card{background:var(--card-background-color);border:1px solid color-mix(in srgb,var(--divider-color) 72%,transparent);border-radius:22px;padding:15px;box-shadow:0 6px 18px rgba(0,0,0,.04);margin-bottom:12px}.hero{background:linear-gradient(135deg,var(--card-background-color) 62%,color-mix(in srgb,var(--primary-color) 6%,var(--card-background-color)) 100%)}
         .hero-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(168px,42%);gap:12px;align-items:start}.page-head{margin-bottom:2px}.room-title{font-size:25px;font-weight:800;line-height:1.04;letter-spacing:-.03em}.area{margin-top:5px;color:var(--secondary-text-color);font-size:13px;font-weight:600}
-        .connection-indicator{position:absolute;top:13px;right:13px;z-index:2;box-sizing:border-box;width:168px;min-width:168px;max-width:168px;height:58px;min-height:58px;max-height:58px;margin:0;padding:11px 12px;border:1px solid var(--divider-color);border-radius:18px;display:grid;grid-template-columns:10px minmax(0,1fr);column-gap:9px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.055);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-style:normal;letter-spacing:0;text-transform:none;text-align:left;white-space:nowrap;transition:none;animation:none}.connection-lamp{display:block;width:10px;height:10px;min-width:10px;min-height:10px;margin:0;padding:0;border:0;border-radius:50%;flex-shrink:0;box-shadow:none}.connection-copy{display:flex;flex-direction:column;gap:3px;min-width:0;margin:0;padding:0;text-align:left;white-space:nowrap}.connection-copy strong,.connection-copy small{margin:0;padding:0;letter-spacing:0;font-style:normal;text-transform:none;white-space:nowrap;overflow:visible;text-overflow:clip}.connection-copy strong{font:700 16px/17px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}.connection-copy small{font:600 13px/14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--secondary-text-color)}.connection-indicator.local{background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color));border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))}.connection-indicator.local .connection-lamp{background:var(--success-color,#43a047)}.connection-indicator.local strong{color:var(--success-color,#43a047)}.connection-indicator.local.freshness-unknown,.connection-indicator.nodata{background:color-mix(in srgb,var(--secondary-text-color) 8%,var(--card-background-color));border-color:color-mix(in srgb,var(--secondary-text-color) 28%,var(--divider-color))}.connection-indicator.nodata .connection-lamp{background:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.nodata strong{color:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.offline{background:color-mix(in srgb,var(--error-color,#db4437) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--error-color,#db4437) 30%,var(--divider-color))}.connection-indicator.offline .connection-lamp{background:var(--error-color,#db4437)}.connection-indicator.offline strong{color:var(--error-color,#db4437)}
+        .connection-indicator{position:absolute;top:13px;right:13px;z-index:2;box-sizing:border-box;width:168px;min-width:168px;max-width:168px;height:58px;min-height:58px;max-height:58px;margin:0;padding:11px 12px;border:1px solid var(--divider-color);border-radius:18px;display:grid;grid-template-columns:10px minmax(0,1fr);column-gap:9px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.055);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-style:normal;letter-spacing:0;text-transform:none;text-align:left;white-space:nowrap;transition:none;animation:none}.connection-lamp{display:block;width:10px;height:10px;min-width:10px;min-height:10px;margin:0;padding:0;border:0;border-radius:50%;flex-shrink:0;box-shadow:none}.connection-copy{display:flex;flex-direction:column;gap:3px;min-width:0;margin:0;padding:0;text-align:left;white-space:nowrap}.connection-copy strong,.connection-copy small{margin:0;padding:0;letter-spacing:0;font-style:normal;text-transform:none;white-space:nowrap;overflow:visible;text-overflow:clip}.connection-copy strong{font:700 16px/17px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}.connection-copy small{font:600 13px/14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--secondary-text-color)}.connection-indicator.local{background:color-mix(in srgb,var(--success-color,#43a047) 11%,var(--card-background-color));border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,var(--divider-color))}.connection-indicator.local .connection-lamp{background:var(--success-color,#43a047)}.connection-indicator.local strong{color:var(--success-color,#43a047)}.connection-indicator.nodata{background:color-mix(in srgb,var(--secondary-text-color) 8%,var(--card-background-color));border-color:color-mix(in srgb,var(--secondary-text-color) 28%,var(--divider-color))}.connection-indicator.nodata .connection-lamp{background:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.nodata strong{color:var(--disabled-text-color,var(--secondary-text-color))}.connection-indicator.offline{background:color-mix(in srgb,var(--error-color,#db4437) 10%,var(--card-background-color));border-color:color-mix(in srgb,var(--error-color,#db4437) 30%,var(--divider-color))}.connection-indicator.offline .connection-lamp{background:var(--error-color,#db4437)}.connection-indicator.offline strong{color:var(--error-color,#db4437)}
         .climate-core{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:10px;margin-top:14px}.primary-temp{min-height:174px;padding:16px;border-radius:22px;background:color-mix(in srgb,var(--primary-color) 5%,var(--card-background-color));border:1px solid color-mix(in srgb,var(--primary-color) 14%,var(--divider-color));display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary-text-color)}.temp-main{margin-top:4px;font-size:58px;font-weight:800;line-height:1;letter-spacing:-.05em}.temp-sub{margin-top:8px;color:var(--secondary-text-color);font-size:13px}.metric-stack{display:grid;grid-template-rows:1fr 1fr;gap:10px}.metric{padding:13px;border-radius:19px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);display:flex;flex-direction:column;justify-content:center}.metric span{font-size:12px;font-weight:700;color:var(--secondary-text-color)}.metric strong{margin-top:5px;font-size:24px}.metric small{margin-top:5px;font-size:12px;color:var(--secondary-text-color)}
         .report-title{margin-top:14px;font-size:13px;font-weight:800;color:var(--secondary-text-color);letter-spacing:.07em;text-transform:uppercase}.status-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}.status-item{min-height:88px;padding:9px 7px;border-radius:18px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}.status-item ha-icon{--mdc-icon-size:23px;color:var(--primary-color);margin-bottom:5px}.status-item span{font-size:11.5px;color:var(--secondary-text-color);font-weight:700}.status-item strong{margin-top:4px;font-size:14px;line-height:1.1}.status-item.active strong,.status-item.active ha-icon{color:var(--success-color,#43a047)}
         .chart-card{margin-top:12px;padding:12px;border-radius:19px;border:1px solid color-mix(in srgb,var(--divider-color) 70%,transparent);background:var(--card-background-color)}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.chart-head strong{font-size:13px}.chart-head small{font-size:11px;color:var(--secondary-text-color)}.chart-wrap{height:132px;margin-top:8px}.chart-wrap svg{width:100%;height:100%;overflow:visible}.chart-grid{stroke:color-mix(in srgb,var(--divider-color) 70%,transparent);stroke-width:1}.chart-room{fill:none;stroke:var(--primary-color);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}.chart-target{fill:none;stroke:var(--success-color,#43a047);stroke-width:2;stroke-dasharray:5 5;stroke-linecap:round}.chart-empty{height:112px;display:grid;place-items:center;color:var(--secondary-text-color);font-size:12px}.chart-legend{display:flex;gap:14px;margin-top:5px;font-size:11px;color:var(--secondary-text-color)}.chart-legend span{display:inline-flex;align-items:center;gap:5px}.chart-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-color)}.chart-dot.target{background:var(--success-color,#43a047)}
@@ -419,7 +422,7 @@ class NikasClimatePanel extends HTMLElement {
   connectionPlaque(m) {
     const c=this.connection(m);
     const detail=c.tone.includes("freshness-unknown")
-      ? "Локальный канал доступен. Syncleo не предоставляет подтверждение актуальности показаний."
+      ? "Локальный канал доступен по данным Syncleo. Состояние получено в Home Assistant. Свежесть ответа кондиционера не подтверждена."
       : `Канал: ${c.label}. Актуальность: ${c.fresh}.`;
     return `<div class="connection-indicator ${c.tone}" role="status" aria-label="${detail}" title="${detail}"><i class="connection-lamp" aria-hidden="true"></i><span class="connection-copy"><strong>${c.label}</strong><small>${c.fresh}</small></span></div>`;
   }
@@ -2692,8 +2695,8 @@ if (Panel && !Panel.prototype.__nikasUi144Patched) {
     return `<section class="card u144-diag"><div class="page-head"><div class="section-title">Диагностика</div><div class="area">${esc(m?.room?.title)}</div></div>
       ${row("Состояние устройства",esc(h.label))}
       ${row("Канал",esc(this.connection(m).label))}
-      ${row("Актуальность показаний",esc(this.connection(m).fresh))}
-      <p class="notice">«Нет данных» во второй строке плашки означает отсутствие подтверждения актуальности. Syncleo не передаёт признак принятого ответа прибора; сохранённые показания и успешное обновление HA его не заменяют.</p>
+      ${row("Актуальность показаний",this.connection(m).tone.includes("freshness-unknown")?"Не подтверждена":esc(this.connection(m).fresh))}
+      <p class="notice">Цвет плашки показывает доступность канала по данным Syncleo. «Получено в HA» означает наличие состояния в Home Assistant, а не подтверждённый свежий ответ кондиционера. Сохранённые показания и успешное обновление HA не доказывают актуальность ответа прибора.</p>
       ${row("WAN","Не требуется")}
       ${row("Climate entity",esc(climate?.entity_id || "не найден"))}
       ${row("Config entry",esc(climateReg?.config_entry_id || "—"))}
@@ -4679,7 +4682,7 @@ if (Panel && !Panel.prototype.__ui159) {
   Panel.prototype.peerConnectionTone159 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
+    if (connection.label === "Локально") return "ok";
     return "nodata";
   };
 
@@ -4693,12 +4696,6 @@ if (Panel && !Panel.prototype.__ui159) {
     const style = document.createElement("style");
     style.dataset.nikasUi159 = "1";
     style.textContent = `
-      .connection-indicator.local.freshness-unknown .connection-lamp{
-        background:var(--disabled-text-color,var(--secondary-text-color))!important;
-      }
-      .connection-indicator.local.freshness-unknown strong{
-        color:var(--secondary-text-color)!important;
-      }
       .peer-lamp.nodata{
         background:var(--disabled-text-color,var(--secondary-text-color))!important;
         box-shadow:0 0 0 3px color-mix(in srgb,var(--disabled-text-color,var(--secondary-text-color)) 22%,transparent)!important;
@@ -4719,7 +4716,7 @@ if (Panel && !Panel.prototype.__ui159) {
       const tone = this.peerConnectionTone159(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Связь: ${connection.label}. Актуальность: ${connection.fresh}.`;
+      peer.title = `Связь: ${connection.label}. Состояние: ${connection.fresh}.`;
     });
   };
 
@@ -4768,31 +4765,10 @@ if (Panel && !Panel.prototype.__ui160) {
   const previousRender = Panel.prototype.render;
   const previousPatch = Panel.prototype.patch;
 
-  Panel.prototype.connection = function(m) {
-    const noData = {tone: "nodata", label: "Нет данных", fresh: "Нет данных"};
-    if (!m?.climate) return noData;
-    const registry = this.registryEntry(m.climate.entity_id);
-    if (registry?.platform !== "syncleo") return noData;
-
-    // Syncleo availability reports the local transport. HA values can also be
-    // optimistic command writes; their presence and HA timestamps prove no RX.
-    const state = m.climate.state;
-    if (state === "unavailable") {
-      return {tone: "offline freshness-none", label: "Нет связи", fresh: "Нет данных"};
-    }
-    if (!m.available || !["off", "heat", "cool", "heat_cool", "auto", "dry", "fan_only"].includes(state)) {
-      return noData;
-    }
-    // A received-sample timestamp/generation is not exported by Syncleo yet.
-    // Keep the known route, but do not invent freshness or stale-sample memory.
-    return {tone: "local freshness-unknown", label: "Локально", fresh: "Нет данных"};
-  };
-
   Panel.prototype.peerConnectionTone160 = function(m) {
     const connection = this.connection(m);
     if (connection.label === "Нет связи") return "bad";
-    if (connection.label === "Локально" && connection.fresh === "Данные актуальны") return "ok";
-    if (connection.label === "Локально" && connection.fresh === "Данные устарели") return "warn";
+    if (connection.label === "Локально") return "ok";
     return "nodata";
   };
 
@@ -4815,7 +4791,7 @@ if (Panel && !Panel.prototype.__ui160) {
       const tone = this.peerConnectionTone160(model);
       lamp.classList.remove("ok", "warn", "bad", "nodata");
       lamp.classList.add(tone);
-      peer.title = `Канал: ${connection.label}. Актуальность: ${connection.fresh}.`;
+      peer.title = `Канал: ${connection.label}. Состояние: ${connection.fresh}.`;
     });
   };
 
@@ -4840,7 +4816,7 @@ if (Panel && !Panel.prototype.__ui160) {
 /* source: nikas-climate-entry-161.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI161 = "1.4.25";
+const UI161 = "1.4.26";
 
 if (Panel && !Panel.prototype.__ui161) {
   const previousRender = Panel.prototype.render;
