@@ -84,10 +84,12 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0 roboto-fontface@0.10.0
           npx playwright install --with-deps chromium
 
-      - name: Run mobile geometry regression
+      - name: Run browser geometry regressions
         env:
           NIKAS_SCREENSHOT_DIR: ${{ runner.temp }}/nikas-climate-geometry
-        run: node tests/summary-fit.browser.cjs
+        run: |
+          node tests/summary-fit.browser.cjs
+          node tests/desktop-host-boundary.browser.cjs
 
       - name: Save production geometry evidence
         if: always()
