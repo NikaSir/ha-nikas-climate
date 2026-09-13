@@ -175,7 +175,7 @@ if (Panel && !Panel.prototype.__nikasUi123Patched) {
 
     const style = document.createElement("style");
     style.textContent = `
-      :host{position:fixed!important;inset:0!important;overflow:hidden!important;overscroll-behavior:none!important;}
+      :host{position:relative!important;overflow:hidden!important;overscroll-behavior:none!important;}
       .shell{position:absolute!important;inset:0!important;overflow:hidden!important;overscroll-behavior:none!important;touch-action:none;}
       .app-header,.peer-selector,.bottom-nav{touch-action:manipulation;overscroll-behavior:none!important;}
       .viewport{min-height:0!important;overflow-y:auto;overflow-x:hidden!important;overscroll-behavior-x:none!important;overscroll-behavior-y:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch;}
