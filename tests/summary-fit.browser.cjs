@@ -48,7 +48,7 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
    window.geometry=()=>{
     const r=p.shadowRoot,card=r.querySelector('.u154-summary'),plaque=card.querySelector(':scope > .connection-indicator');
     const decoration=card.querySelector(':scope > .u154-decoration'),circle=decoration.querySelector('.u154-corner');
-    const hero=card.querySelector(':scope > .u154-hero'),heading=hero.querySelector('.u154-head'),photo=hero.querySelector('.u154-photo-wrap');
+    const hero=card.querySelector(':scope > .u154-hero'),heading=hero.querySelector('.u154-head'),photo=hero.querySelector('.u154-photo-wrap'),photoImage=photo.querySelector('img');
     const lamp=plaque.querySelector('.connection-lamp'),copy=plaque.querySelector('.connection-copy'),main=copy.querySelector('strong'),fresh=copy.querySelector('small');
     const scale=p._transform158?.scale||1,c=card.getBoundingClientRect();
     const rect=n=>{const b=n.getBoundingClientRect();return {left:(b.left-c.left)/scale,top:(b.top-c.top)/scale,right:(b.right-c.left)/scale,bottom:(b.bottom-c.top)/scale,width:b.width/scale,height:b.height/scale};};
@@ -57,13 +57,13 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
     const typography=['fontFamily','fontSize','fontWeight','lineHeight','marginTop','marginRight','marginBottom','marginLeft','paddingTop','paddingRight','paddingBottom','paddingLeft','letterSpacing','fontStyle','textTransform','whiteSpace','textOverflow'];
     return {
      scale,viewport:{width:innerWidth,height:innerHeight},hostWidth:p.getBoundingClientRect().width,card:rect(card),absoluteCard:{top:c.top,bottom:c.bottom},
-     plaque:rect(plaque),decoration:rect(decoration),circle:rect(circle),lamp:rect(lamp),copy:rect(copy),main:rect(main),fresh:rect(fresh),heading:rect(heading),photo:rect(photo),
+     plaque:rect(plaque),decoration:rect(decoration),circle:rect(circle),lamp:rect(lamp),copy:rect(copy),main:rect(main),fresh:rect(fresh),heading:rect(heading),photo:rect(photo),photoImage:rect(photoImage),photoNaturalHeight:photoImage.naturalHeight,
      cardCSS:css(card,['position','isolation','boxSizing','borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth','paddingTop','paddingRight','paddingBottom','paddingLeft','borderRadius','overflow']),
      plaqueCSS:css(plaque,['position','top','right','boxSizing','width','minWidth','maxWidth','height','minHeight','maxHeight','paddingTop','paddingRight','paddingBottom','paddingLeft','marginTop','marginRight','marginBottom','marginLeft','borderTopWidth','borderRadius','display','gridTemplateColumns','columnGap','alignItems','zIndex','boxShadow','transitionDuration','animationName']),
      decorationCSS:css(decoration,['position','top','right','bottom','left','borderRadius','overflow','zIndex','pointerEvents','opacity']),
      circleCSS:css(circle,['position','top','right','width','height','borderRadius','backgroundColor','opacity','borderTopWidth','boxShadow','filter','transform','animationName']),
      lampCSS:css(lamp,['width','height','borderRadius','boxShadow']),copyCSS:css(copy,['display','flexDirection','rowGap','textAlign']),mainCSS:css(main,typography),freshCSS:css(fresh,typography),
-     headingCSS:css(heading,['paddingTop','paddingRight','minHeight']),heroZ:getComputedStyle(hero).zIndex,
+     headingCSS:css(heading,['paddingTop','paddingRight','minHeight']),heroZ:getComputedStyle(hero).zIndex,photoImageCSS:css(photoImage,['transform']),
      label:main.textContent,freshness:fresh.textContent,palette:{main:getComputedStyle(main).color,fresh:getComputedStyle(fresh).color,lamp:getComputedStyle(lamp).backgroundColor,background:getComputedStyle(plaque).backgroundColor,border:getComputedStyle(plaque).borderTopColor},
      peerPalette:[...r.querySelectorAll('.peer[data-room]')].map(peer=>({room:peer.dataset.room,tone:peer.querySelector('.peer-lamp').className,lamp:getComputedStyle(peer.querySelector('.peer-lamp')).backgroundColor})),
      shellRects:['.app-header','.peer-selector','.bottom-nav'].map(s=>{const b=r.querySelector(s).getBoundingClientRect();return {left:b.left,top:b.top,width:b.width,height:b.height};}),
@@ -72,7 +72,8 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
      accessiblePlaque:!plaque.closest('[aria-hidden="true"]')&&plaque.getAttribute('role')==='status',
      horizontalOverflow:Math.max(0,r.querySelector('.content').scrollWidth-r.querySelector('.viewport').clientWidth),
      viewBottom:r.querySelector('.viewport').getBoundingClientRect().bottom,
-     imageLoaded:photo.querySelector('img').complete&&photo.querySelector('img').naturalWidth>0,ui:r.querySelector('.header-title span').textContent,
+     summaryStatuses:[...r.querySelectorAll('.u154-status')].map(item=>({title:item.querySelector('span')?.textContent,value:item.querySelector('strong')?.textContent,iconColor:getComputedStyle(item.querySelector('ha-icon')).color,valueColor:getComputedStyle(item.querySelector('strong')).color})),
+     imageLoaded:photoImage.complete&&photoImage.naturalWidth>0,ui:r.querySelector('.header-title span').textContent,
     };
    };
   });
@@ -126,10 +127,23 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
    await page.setViewportSize({width,height});
    await page.evaluate(({top,bottom,sidebar})=>{p.resetZoom158({announce:false});p.style.display='block';p.style.width=`calc(100% - ${sidebar}px)`;p.style.marginLeft=`${sidebar}px`;const r=p.shadowRoot;r.querySelector('.shell').style.gridTemplateRows=`${60+top}px 52px minmax(0,1fr) ${64+bottom}px`;r.querySelector('.u154-summary').style.removeProperty('width');r.querySelector('.viewport').scrollTop=0;},{top,bottom,sidebar});await settle();
   };
+  const assertPhotoPolicy=(g,state,name)=>{
+   assert(g.imageLoaded,`${name}: production hero image loaded`);
+   if(['off','unavailable'].includes(state)){
+    assert.notEqual(g.photoImageCSS.transform,'none',`${name}: ${state} image must be cropped`);
+    const sourceTopCrop=(g.photo.top-g.photoImage.top)*g.photoNaturalHeight/g.photoImage.height;
+    const sourceBottomCrop=(g.photoImage.bottom-g.photo.bottom)*g.photoNaturalHeight/g.photoImage.height;
+    assert(sourceTopCrop>=5,`${name}: embedded top border must be cropped: ${sourceTopCrop}`);
+    assert(sourceBottomCrop>=30,`${name}: embedded bottom border must be cropped: ${sourceBottomCrop}`);
+   }else{
+    assert.equal(g.photoImageCSS.transform,'none',`${name}: ${state} image must not be cropped`);
+   }
+  };
+  await setHost(390,844,59,34);await page.evaluate(()=>{states['climate.living'].attributes.swing_mode='vertical';states['switch.living_night'].state='off';states['switch.living_turbo'].state='off';p.hass=makeHass();});await settle();const neutralExtras=await measure('neutral-extra-status-colors');const extraByTitle=Object.fromEntries(neutralExtras.summaryStatuses.map(status=>[status.title,status]));for(const title of ['Ночной','Турбо']){assert.equal(extraByTitle['Качание'].iconColor,extraByTitle[title].iconColor,`Качание icon must match ${title}`);assert.equal(extraByTitle['Качание'].valueColor,extraByTitle[title].valueColor,`Качание value must match ${title}`);}await page.evaluate(()=>{states['climate.living'].attributes.swing_mode='off';p.hass=makeHass();});await settle();
   for(const [width,height,top,bottom]of [[390,844,59,34],[430,932,59,34],[360,800,24,24],[320,568,20,0],[932,430,0,20],[768,1024,24,20],[1280,900,0,0]]){
    for(const sidebar of width>=768?[0,256]:[0]){
     await setHost(width,height,top,bottom,sidebar);const g=await measure(`viewport-${width}x${height}-sidebar-${sidebar}`);
-    if([390,430].includes(width)){assert(g.absoluteCard.bottom<=g.viewBottom-10,`primary summary must fit before bottom menu: ${JSON.stringify(g)}`);assert(g.imageLoaded,'production hero image loaded');if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`summary-${width}.png`)});}}
+    if([390,430].includes(width)){assert(g.absoluteCard.bottom<=g.viewBottom-10,`primary summary must fit before bottom menu: ${JSON.stringify(g)}`);assertPhotoPolicy(g,'off',`viewport-${width}`);if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`summary-${width}.png`)});}}
    }
   }
   await setHost(430,932,59,34);
@@ -172,6 +186,7 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
    assert.equal(g.label,({local:'Локально',offline:'Нет связи',nodata:'Нет данных'})[tone],'channel label');
    assert.equal(g.freshness,tone==='local'?'Получено в HA':'Нет данных','no confirmed device sample claimed');
    assertChannelPalette(g,tone,`actual-state-${state}`);
+   if(state!=='unknown')assertPhotoPolicy(g,state,`actual-state-${state}`);
   }
   for(const platform of ['other',null,'syncleo']){
    await page.evaluate(platform=>{p._entityRegistry.find(entry=>entry.entity_id==='climate.living').platform=platform;p.hass=makeHass();},platform);await settle();const g=await unchanged(`actual-platform-${platform}`);

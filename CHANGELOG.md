@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.58 · UI 1.4.29
+
+- Убраны белые полосы сверху и снизу фото выключенного кондиционера: встроенная кайма изображения теперь остаётся за границами видимой рамки.
+- Цвет включённого «Качания» на Сводке приведён к нейтральному цвету «Ночного» и «Турбо».
+
 ## 0.1.57 · UI 1.4.28
 
 The Climate title opens `/home/overview`. Command behavior, state updates and approved panel geometry remain unchanged.
