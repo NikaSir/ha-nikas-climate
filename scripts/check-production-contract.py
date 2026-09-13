@@ -36,6 +36,9 @@ assert standard["header_title_line_2"] == f"UI v{ui_version}"
 assert standard["production_entrypoint"] == expected_path
 assert bundle_name == "nikas-climate-production.js"
 assert bundle.is_file()
+assert literal(panel, "PANEL_PARENT_ROUTE") == "/home/overview"
+assert standard["parent_route"] == "/home/overview"
+assert standard["safe_return_route"] == "/home/overview"
 
 production = bundle.read_text(encoding="utf-8")
 assert re.search(r"^\s*(?:import|export)\b", production, re.MULTILINE) is None

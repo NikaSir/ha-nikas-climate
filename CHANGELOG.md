@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.57 · UI 1.4.28
+
+The Climate title opens `/home/overview`. Command behavior, state updates and approved panel geometry remain unchanged.
+
 ## 0.1.56 — 2026-09-13
 
 - UI: `v1.4.27`.
