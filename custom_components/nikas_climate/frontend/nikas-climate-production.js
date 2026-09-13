@@ -6,7 +6,7 @@
 /* source: nikas-climate-panel.js */
 (() => {
 const UI_VERSION = "1.2.0";
-const SAFE_RETURN_ROUTE = "/dashboard-house-v13/home";
+const SAFE_RETURN_ROUTE = "/home/overview";
 const HISTORY_HOURS = 24;
 
 const ROOMS = [
@@ -375,7 +375,7 @@ class NikasClimatePanel extends HTMLElement {
       <div class="shell">
         <header class="app-header">
           <button class="header-action" id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
-          <button class="header-title" id="back" type="button" aria-label="Вернуться в панель Дом"><strong>Кондиционирование</strong><span>UI v${UI_VERSION}</span></button>
+          <button class="header-title" id="back" type="button" aria-label="Перейти к главному обзору"><strong>Кондиционирование</strong><span>UI v${UI_VERSION}</span></button>
           <button class="header-action" id="refresh" type="button" aria-label="Обновить состояние кондиционера"><ha-icon icon="mdi:refresh"></ha-icon></button>
         </header>
         <div class="peer-selector" id="devices"></div>
@@ -4816,7 +4816,7 @@ if (Panel && !Panel.prototype.__ui160) {
 /* source: nikas-climate-entry-161.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI161 = "1.4.27";
+const UI161 = "1.4.28";
 
 if (Panel && !Panel.prototype.__ui161) {
   const previousRender = Panel.prototype.render;

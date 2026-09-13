@@ -1,11 +1,11 @@
 {
   "standard": "NikaS specialized panel UI",
   "standard_version": "2.2",
-  "integration_version": "0.1.56",
-  "ui_version": "1.4.27",
+  "integration_version": "0.1.57",
+  "ui_version": "1.4.28",
   "route": "/dashboard-climate-v1/home",
-  "parent_route": "/dashboard-house-v13/home",
-  "safe_return_route": "/dashboard-house-v13/home",
+  "parent_route": "/home/overview",
+  "safe_return_route": "/home/overview",
   "host_boundary": "ha-panel",
   "header_body_px": 60,
   "peer_selector_body_px": 52,
@@ -111,7 +111,7 @@
     "diagnostics"
   ],
   "header_title_line_1": "Кондиционирование",
-  "header_title_line_2": "UI v1.4.27",
+  "header_title_line_2": "UI v1.4.28",
   "header_title_is_only_return_control": true,
   "header_refresh_button": true,
   "header_refresh_contract": "NikaS 2.2 v1.1",
@@ -201,5 +201,17 @@
     "geometry_overrides_allowed": false,
     "pointer_events": "none",
     "aria_hidden": true
+  },
+  "navigation_contract_version": "1.3",
+  "version": "2.2",
+  "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+  "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+  "standard_sha256": "e150c4ce087635c0cbc25031a6ce1b8489ba0902da3745335af88457484963dc",
+  "navigation_contract_sha256": "04c81cb498de3bd9ac35b7e70ed8a90fa4376ed3a31bcedb1fe5cc3cb53e05a6",
+  "header_navigation": {
+    "contract_version": "1.3",
+    "mode": "declared-parent",
+    "main_parent_route": "/home/overview",
+    "ambient_return_authority": false
   }
 }

@@ -75,6 +75,7 @@ jobs:
 
       - name: Run frontend behavior tests
         run: |
+          node tests/title_navigation.test.mjs
           for test_file in tests/*.test.cjs; do
             node "$test_file"
           done
