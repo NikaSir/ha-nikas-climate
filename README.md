@@ -1,5 +1,7 @@
 # NikaS Climate
 
+> Beta candidate: **0.1.59-b1** / UI **1.4.30**. Unified header with a black refresh icon in the light theme (theme-aware in dark mode). Device selection is above the bottom navigation. Device control behavior is unchanged. Publication is manual as a GitHub pre-release; this notice does not confirm publication.
+
 Автономная специализированная панель Home Assistant для локального управления кондиционерами NikaS.
 
 ## Назначение
