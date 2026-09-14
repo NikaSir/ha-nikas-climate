@@ -125,7 +125,7 @@ const sharedFont=font('-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,
   };
   const setHost=async(width,height,top=0,bottom=0,sidebar=0)=>{
    await page.setViewportSize({width,height});
-   await page.evaluate(({top,bottom,sidebar})=>{p.resetZoom158({announce:false});p.style.display='block';p.style.width=`calc(100% - ${sidebar}px)`;p.style.marginLeft=`${sidebar}px`;const r=p.shadowRoot;r.querySelector('.shell').style.gridTemplateRows=`${60+top}px 52px minmax(0,1fr) ${64+bottom}px`;r.querySelector('.u154-summary').style.removeProperty('width');r.querySelector('.viewport').scrollTop=0;},{top,bottom,sidebar});await settle();
+   await page.evaluate(({top,bottom,sidebar})=>{p.resetZoom158({announce:false});p.style.display='block';p.style.width=`calc(100% - ${sidebar}px)`;p.style.marginLeft=`${sidebar}px`;const r=p.shadowRoot;r.querySelector('.shell').style.gridTemplateRows=`${60+top}px minmax(0,1fr) 52px ${64+bottom}px`;r.querySelector('.u154-summary').style.removeProperty('width');r.querySelector('.viewport').scrollTop=0;},{top,bottom,sidebar});await settle();
   };
   const assertPhotoPolicy=(g,state,name)=>{
    assert(g.imageLoaded,`${name}: production hero image loaded`);
