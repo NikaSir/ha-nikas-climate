@@ -4817,7 +4817,7 @@ if (Panel && !Panel.prototype.__ui160) {
 /* source: nikas-climate-entry-161.js */
 (() => {
 const Panel = customElements.get("nikas-climate-panel");
-const UI161 = "1.4.30";
+const UI161 = "1.4.31";
 
 if (Panel && !Panel.prototype.__ui161) {
   const previousRender = Panel.prototype.render;
