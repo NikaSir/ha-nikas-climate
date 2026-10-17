@@ -1,3 +1,8 @@
+## Repository audit maintenance — 2026-10-17
+
+- Include the HERO regression in the required NikaS quality gate; reject incomplete or unsuccessful job results.
+- Product/UI versions and equipment commands are unchanged; target-device acceptance remains separate.
+
 # Changelog
 
 ## 0.1.58 · UI 1.4.29
